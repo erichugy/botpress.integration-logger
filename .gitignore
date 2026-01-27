@@ -12,6 +12,7 @@ dist/
 
 # ADK files (contain bot/workspace IDs)
 agent.json
+.adk/bot/traces/
 
 # IDE
 .vscode/
