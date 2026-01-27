@@ -62,7 +62,12 @@ export const SlackThread = new Conversation({
         pendingRequest: user.state.pendingRequest,
         isPublicChannel: false,
       }),
-      tools: [saveIntegrationRequest, actions.parseRelativeDate.asTool()],
+      tools: [
+        saveIntegrationRequest,
+        actions.parseRelativeDate.asTool(),
+        actions.getSlackUserContact.asTool(),
+        actions.findSlackUserByName.asTool(),
+      ],
     })
   },
 })

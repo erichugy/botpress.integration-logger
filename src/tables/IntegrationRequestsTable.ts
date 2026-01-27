@@ -20,6 +20,10 @@ export const IntegrationRequestsTable = new Table({
       .enum(["new", "on_hold", "in_progress", "completed", "rejected"])
       .default("new")
       .describe("Current status of the request"),
+    origin: z
+      .string()
+      .default("slack")
+      .describe("Origin application of the request (e.g., slack, discord)"),
     requestedBy: z.string().describe("Slack user ID of the requester"),
     requestedByName: z.string().describe("Name of the person making the request"),
     requestedByEmail: z
@@ -38,11 +42,14 @@ export const IntegrationRequestsTable = new Table({
       .describe("Name of the subject matter expert to contact for follow-up questions"),
     contactPersonEmail: z
       .string()
-      .optional()
-      .describe("Email of the subject matter expert"),
+      .describe("Email of the subject matter expert (required)"),
     contactPersonSlackId: z
       .string()
       .optional()
       .describe("Slack user ID of the contact person (if provided via Slack mention)"),
+    ccList: z
+      .array(z.string().email())
+      .optional()
+      .describe("List of email addresses to CC on updates about this request"),
   },
 })

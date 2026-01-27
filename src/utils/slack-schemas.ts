@@ -10,6 +10,16 @@ const SlackMessageTagsSchema = z.object({
   "slack:forkedToThread": z.string().optional(),
 })
 
+// NOTE: Slack mentions can be strings (user IDs) or objects depending on message source
+const SlackMentionSchema = z.union([
+  z.string(),
+  z.object({
+    type: z.string().optional(),
+    user_id: z.string().optional(),
+    text: z.string().optional(),
+  }).passthrough(),
+])
+
 const SlackMessageSchema = z.object({
   id: z.string(),
   createdAt: z.string(),
@@ -20,7 +30,7 @@ const SlackMessageSchema = z.object({
   direction: z.literal("incoming"),
   payload: z.object({
     text: z.string(),
-    mentions: z.array(z.string()),
+    mentions: z.array(SlackMentionSchema),
   }),
   tags: SlackMessageTagsSchema,
 })

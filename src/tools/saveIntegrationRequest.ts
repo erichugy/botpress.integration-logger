@@ -29,7 +29,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
       .string()
       .email()
       .optional()
-      .describe("Email of the person making this request (if provided)"),
+      .describe("Email of the requester - use getSlackUserContact to fetch this from their Slack ID"),
     endUser: z
       .string()
       .min(1, "End user is required")
@@ -37,7 +37,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     dueDate: z
       .string()
       .optional()
-      .describe("Due date if there is one (e.g., '2024-03-15' or 'end of Q1' or 'no deadline')"),
+      .describe("Due date in ISO format (YYYY-MM-DD) - use parseRelativeDate to convert relative dates"),
     contactPersonInput: z
       .string()
       .min(1, "Contact person is required")
@@ -47,8 +47,19 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     contactPersonEmail: z
       .string()
       .email()
+      .describe("Email of the contact person (REQUIRED - use getSlackUserContact if you have their Slack ID, otherwise ask the user)"),
+    contactPersonSlackId: z
+      .string()
       .optional()
-      .describe("Email of the contact person (required if not providing a Slack mention)"),
+      .describe("Slack user ID of the contact person if available (e.g., U0A6E7PA7FH)"),
+    ccList: z
+      .array(z.string().email())
+      .optional()
+      .describe("List of email addresses to CC on updates about this request"),
+    origin: z
+      .string()
+      .default("slack")
+      .describe("Origin application of the request (defaults to 'slack')"),
   }),
 
   output: z.object({
@@ -67,9 +78,13 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     dueDate,
     contactPersonInput,
     contactPersonEmail,
+    contactPersonSlackId,
+    ccList,
+    origin,
   }) => {
     const requestedBySlackId = user.tags["slack:id"] ?? "unknown"
 
+    // NOTE: resolveContactPerson handles both Slack mentions and plain names
     const contactPerson = await actions.resolveContactPerson({
       contactInput: contactPersonInput,
       emailIfProvided: contactPersonEmail,
@@ -82,14 +97,16 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
           description,
           priority,
           status: "new",
+          origin: origin ?? "slack",
           requestedBy: requestedBySlackId,
           requestedByName,
           requestedByEmail,
           endUser,
           dueDate,
           contactPersonName: contactPerson.name,
-          contactPersonEmail: contactPerson.email,
-          contactPersonSlackId: contactPerson.slackId,
+          contactPersonEmail: contactPersonEmail,
+          contactPersonSlackId: contactPersonSlackId ?? contactPerson.slackId,
+          ccList,
         },
       ],
     })
