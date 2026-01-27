@@ -3,11 +3,18 @@ import type { MessageFormatter } from "./formatters"
 export function buildHelpText(fmt: MessageFormatter): string {
   return `${fmt.bold("Integration Request Bot")}
 
-I help you submit integration requests. Here's how to use me:
+I help you submit integration requests. Here's what I'll ask for:
 
-${fmt.bullet("Just tell me about the integration you need")}
-${fmt.bullet("I'll gather the details: title, description, and priority")}
-${fmt.bullet("Once complete, I'll save your request")}
+${fmt.bold("Required:")}
+${fmt.bullet("Your name")}
+${fmt.bullet("Your email")}
+${fmt.bullet("Title and description of the integration")}
+${fmt.bullet("Priority level")}
+${fmt.bullet("Who the end user is")}
+${fmt.bullet("Contact person (subject matter expert for follow-up questions)")}
+
+${fmt.bold("Optional:")}
+${fmt.bullet("Due date (if any)")}
 
 ${fmt.bold("Commands:")}
 ${fmt.bullet(`${fmt.code("/help")} - Show this help message`)}
@@ -29,20 +36,22 @@ export type CommandResult = {
 
 export function handleCommand(
   text: string,
-  fmt: MessageFormatter
+  fmt: MessageFormatter,
+  userId?: string
 ): CommandResult | null {
+  const userTag = userId ? `<@${userId}> ` : ""
   const normalized = text.toLowerCase().trim()
 
   if (normalized === "/cancel" || normalized === "cancel") {
     return {
-      response: "Request cancelled. Let me know when you want to submit a new integration request.",
+      response: `${userTag}Request cancelled. Let me know when you want to submit a new integration request.`,
       shouldClearState: true,
     }
   }
 
   if (normalized === "/help" || normalized === "help") {
     return {
-      response: buildHelpText(fmt),
+      response: `${userTag}${buildHelpText(fmt)}`,
       shouldClearState: false,
     }
   }

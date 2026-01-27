@@ -1,10 +1,10 @@
-import { Autonomous, z, user, bot } from "@botpress/runtime";
-import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable";
+import { Autonomous, z, user, bot } from "@botpress/runtime"
+import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
 
-export const saveIntegrationRequest = new Autonomous.Tool({
+export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
   name: "saveIntegrationRequest",
   description:
-    "Save a new integration request to the database. Call this tool once you have gathered all required information: title, description, and priority.",
+    "Save a new integration request to the database. Call this tool once you have gathered ALL required information from the user.",
 
   input: z.object({
     title: z
@@ -19,13 +19,25 @@ export const saveIntegrationRequest = new Autonomous.Tool({
       .describe("Detailed description of what the integration should do"),
     priority: z
       .enum(["low", "medium", "high", "critical"])
-      .describe(
-        "Priority level: low (nice-to-have), medium (useful), high (important), critical (urgent)"
-      ),
+      .describe("Priority level: low (nice-to-have), medium (useful), high (important), critical (urgent)"),
     requestedByName: z
       .string()
+      .describe("Name of the person making this request"),
+    requestedByEmail: z
+      .string()
+      .email()
       .optional()
-      .describe("Display name of the person making the request"),
+      .describe("Email of the person making this request (if provided)"),
+    endUser: z
+      .string()
+      .describe("Who is the end user of this integration - who will use it"),
+    dueDate: z
+      .string()
+      .optional()
+      .describe("Due date if there is one (e.g., '2024-03-15' or 'end of Q1' or 'no deadline')"),
+    contactPerson: z
+      .string()
+      .describe("The subject matter expert who knows the most about this request and should be contacted for follow-up questions. May or may not be the requester."),
   }),
 
   output: z.object({
@@ -34,8 +46,17 @@ export const saveIntegrationRequest = new Autonomous.Tool({
     message: z.string(),
   }),
 
-  handler: async ({ title, description, priority, requestedByName }) => {
-    const userId = user.tags.id || "unknown";
+  handler: async ({
+    title,
+    description,
+    priority,
+    requestedByName,
+    requestedByEmail,
+    endUser,
+    dueDate,
+    contactPerson,
+  }) => {
+    const slackUserId = user.tags["slack:userId"] || user.tags.id || "unknown"
 
     const result = await IntegrationRequestsTable.createRows({
       rows: [
@@ -44,26 +65,27 @@ export const saveIntegrationRequest = new Autonomous.Tool({
           description,
           priority,
           status: "new",
-          requestedBy: userId,
+          requestedBy: slackUserId,
           requestedByName,
+          requestedByEmail,
+          endUser,
+          dueDate,
+          contactPerson,
         },
       ],
-    });
+    })
 
-    const requestId = result.rows[0]?.id ?? 0;
+    const requestId = result.rows[0]?.id ?? 0
 
-    // Update bot stats
-    bot.state.totalRequestsSubmitted += 1;
-
-    // Clear user's pending request state
-    user.state.pendingRequest = undefined;
+    bot.state.totalRequestsSubmitted += 1
+    user.state.pendingRequest = undefined
 
     return {
       success: true,
       requestId,
       message: `Integration request #${requestId} has been successfully submitted with ${priority} priority.`,
-    };
+    }
   },
-});
+})
 
-export default saveIntegrationRequest;
+export default saveIntegrationRequest

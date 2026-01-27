@@ -1,4 +1,4 @@
-import { Table, z } from "@botpress/runtime";
+import { Table, z } from "@botpress/runtime"
 
 export const IntegrationRequestsTable = new Table({
   name: "IntegrationRequestsTable",
@@ -10,9 +10,7 @@ export const IntegrationRequestsTable = new Table({
       searchable: true,
     },
     description: {
-      schema: z
-        .string()
-        .describe("Detailed description of the integration request"),
+      schema: z.string().describe("Detailed description of the integration request"),
       searchable: true,
     },
     priority: z
@@ -23,9 +21,20 @@ export const IntegrationRequestsTable = new Table({
       .default("new")
       .describe("Current status of the request"),
     requestedBy: z.string().describe("Slack user ID of the requester"),
-    requestedByName: z
+    requestedByName: z.string().describe("Name of the person making the request"),
+    requestedByEmail: z
       .string()
       .optional()
-      .describe("Display name of the requester"),
+      .describe("Email of the person making the request"),
+    endUser: z
+      .string()
+      .describe("Who is the end user of this integration"),
+    dueDate: z
+      .string()
+      .optional()
+      .describe("Due date for the integration if applicable (ISO format or descriptive)"),
+    contactPerson: z
+      .string()
+      .describe("Subject matter expert to contact for follow-up questions (may differ from requester)"),
   },
-});
+})

@@ -9,6 +9,7 @@ export type PendingRequest = {
   endUser?: string
   dueDate?: string
   contactPerson?: string
+  contactPersonEmail?: string
 }
 
 export type InstructionContext = {

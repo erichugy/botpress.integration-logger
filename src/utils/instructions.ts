@@ -1,5 +1,5 @@
+import { PRIORITY_GUIDANCE, REQUIRED_FIELDS } from "./constants"
 import type { InstructionContext } from "./types"
-import { REQUIRED_FIELDS, PRIORITY_GUIDANCE } from "./constants"
 
 const BASE_ROLE = `You are an Integration Request Bot that helps users submit integration requests. Your job is to collect all required information before saving the request.`
 
@@ -25,7 +25,8 @@ export function buildInstructions(ctx: InstructionContext): string {
 - The contact person is the subject matter expert - ask "Who knows the most about this request and should be contacted for follow-up questions?" They may or may not be the requester.
 - Once you have everything, use the saveIntegrationRequest tool
 - Confirm the submission with the request ID
-- Keep responses concise - this is Slack, not email`
+- Keep responses concise - this is Slack, not email
+- ALWAYS start your message by tagging the user. CRITICAL: Since this is JSX, you must wrap Slack mentions in curly braces as a string: {"<@${ctx.userId}>"}. Example: <Message>{"<@${ctx.userId}>"} Here is your response...</Message>`
 
   return `${BASE_ROLE}
 

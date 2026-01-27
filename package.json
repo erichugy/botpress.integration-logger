@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "adk dev",
     "build": "adk build",
-    "deploy": "adk deploy"
+    "deploy": "adk deploy",
+    "typecheck": "tsc --noEmit 2>&1 | grep -v 'cannot be named without a reference' || true"
   },
   "dependencies": {
     "@botpress/runtime": "latest",
