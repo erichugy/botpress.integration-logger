@@ -1,0 +1,21 @@
+{
+  "name": "integration-logger-bot",
+  "version": "1.0.0",
+  "description": "Botpress ADK bot for logging integration requests via Slack",
+  "type": "module",
+  "scripts": {
+    "dev": "adk dev",
+    "build": "adk build",
+    "deploy": "adk deploy"
+  },
+  "dependencies": {
+    "@botpress/runtime": "latest",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
