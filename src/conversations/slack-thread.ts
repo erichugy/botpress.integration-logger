@@ -4,18 +4,32 @@ import { slackFormatter } from "../utils/formatters"
 import { handleCommand } from "../utils/commands"
 import { buildInstructions } from "../utils/instructions"
 
-export const SlackDM = new Conversation({
-  channel: "slack.dm",
+export const SlackThread = new Conversation({
+  channel: "slack.thread",
 
   async handler({ message, conversation, execute }) {
     if (message?.type !== "text") {
       await conversation.send({
         type: "text",
         payload: {
-          text: "Private conversations have not been enabled for this bot. Please use the public channel instead.",
+          text: "I can help you submit integration requests. Just describe what you need!",
         },
       })
-      return;
+      return
+    }
+
+    const text = message.payload.text
+
+    const commandResult = handleCommand(text, slackFormatter)
+    if (commandResult) {
+      if (commandResult.shouldClearState) {
+        user.state.pendingRequest = undefined
+      }
+      await conversation.send({
+        type: "text",
+        payload: { text: commandResult.response },
+      })
+      return
     }
 
     await execute({
