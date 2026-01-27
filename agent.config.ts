@@ -10,6 +10,12 @@ export default defineConfig({
     zai: "openai:gpt-4o-mini",
   },
 
+  bot: {
+    state: z.object({
+      totalRequestsSubmitted: z.number().default(0),
+    }),
+  },
+
   user: {
     state: z.object({
       // Track conversation stage for request collection
@@ -20,14 +26,34 @@ export default defineConfig({
           priority: z.enum(["low", "medium", "high", "critical"]).optional(),
         })
         .optional(),
-      // Track if user is currently submitting a request
-      isSubmittingRequest: z.boolean().default(false),
     }),
+    tags: {
+      // user-level tags
+    }
   },
 
-  bot: {
-    state: z.object({
-      totalRequestsSubmitted: z.number().default(0),
+  conversation: {
+    tags: {
+      // Conversation-level tags
+    },
+  },
+
+  message: {
+    tags: {
+      // Message-level tags
+    },
+  },
+
+  workflow: {
+    tags: {
+      // Workflow-level tags
+    },
+  },
+
+  configuration: {
+    schema: z.object({
+      // Configuration schema for your agent
+      // Accessible via `configuration` export
     }),
   },
 

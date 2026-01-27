@@ -57,7 +57,6 @@ export const saveIntegrationRequest = new Autonomous.Tool({
 
     // Clear user's pending request state
     user.state.pendingRequest = undefined;
-    user.state.isSubmittingRequest = false;
 
     return {
       success: true,
