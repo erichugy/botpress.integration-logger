@@ -10,9 +10,9 @@ dist/
 .env.local
 .env.*.local
 
-# ADK files (contain bot/workspace IDs)
+# ADK files (contain bot/workspace IDs and sensitive credentials)
 agent.json
-.adk/bot/traces/
+.adk/
 
 # IDE
 .vscode/
