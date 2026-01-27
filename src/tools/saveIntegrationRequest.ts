@@ -1,4 +1,5 @@
-import { Autonomous, z, user, bot } from "@botpress/runtime"
+import { Autonomous, actions, bot, user, z } from "@botpress/runtime"
+
 import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
 
 export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
@@ -20,24 +21,27 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     priority: z
       .enum(["low", "medium", "high", "critical"])
       .describe("Priority level: low (nice-to-have), medium (useful), high (important), critical (urgent)"),
-    requestedByName: z
-      .string()
-      .describe("Name of the person making this request"),
+    requestedByName: z.string().describe("Name of the person making this request"),
     requestedByEmail: z
       .string()
       .email()
       .optional()
       .describe("Email of the person making this request (if provided)"),
-    endUser: z
-      .string()
-      .describe("Who is the end user of this integration - who will use it"),
+    endUser: z.string().describe("Who is the end user of this integration - who will use it"),
     dueDate: z
       .string()
       .optional()
       .describe("Due date if there is one (e.g., '2024-03-15' or 'end of Q1' or 'no deadline')"),
-    contactPerson: z
+    contactPersonInput: z
       .string()
-      .describe("The subject matter expert who knows the most about this request and should be contacted for follow-up questions. May or may not be the requester."),
+      .describe(
+        "The contact person - can be a Slack mention (e.g., <@U123ABC>) or a name. This is the subject matter expert for follow-up questions."
+      ),
+    contactPersonEmail: z
+      .string()
+      .email()
+      .optional()
+      .describe("Email of the contact person (required if not providing a Slack mention)"),
   }),
 
   output: z.object({
@@ -54,9 +58,15 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     requestedByEmail,
     endUser,
     dueDate,
-    contactPerson,
+    contactPersonInput,
+    contactPersonEmail,
   }) => {
-    const slackUserId = user.tags["slack:userId"] || user.tags.id || "unknown"
+    const requestedBySlackId = user.tags["slack:id"] ?? "unknown"
+
+    const contactPerson = await actions.resolveContactPerson({
+      contactInput: contactPersonInput,
+      emailIfProvided: contactPersonEmail,
+    })
 
     const result = await IntegrationRequestsTable.createRows({
       rows: [
@@ -65,12 +75,14 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
           description,
           priority,
           status: "new",
-          requestedBy: slackUserId,
+          requestedBy: requestedBySlackId,
           requestedByName,
           requestedByEmail,
           endUser,
           dueDate,
-          contactPerson,
+          contactPersonName: contactPerson.name,
+          contactPersonEmail: contactPerson.email,
+          contactPersonSlackId: contactPerson.slackId,
         },
       ],
     })

@@ -15,14 +15,24 @@ export function buildInstructions(ctx: InstructionContext): string {
     ? `Pending request: ${JSON.stringify(ctx.pendingRequest)}`
     : "No pending request"
 
+  const userNameInfo = ctx.userName
+    ? `The requester's name is "${ctx.userName}" (from Slack profile). Use this directly as requestedByName - do NOT ask for their name.`
+    : `We don't have the user's name from Slack. Ask for their name.`
+
   const guidelines = `Guidelines:
 - You MUST collect ALL required information before calling saveIntegrationRequest
 - Ask for missing information one or two questions at a time to keep it conversational
-- Required: name, title, description, priority, end user, contact person
-- Optional: email, due date
-- If the user's Slack display name is provided, use it as a reasonable default for their name but confirm with them (e.g., "I see your name is X - is that correct, or would you like to use a different name?")
+- Required: title, description, priority, end user, contact person (with email if not a Slack user)
+- Optional: requester email, due date
+- ${userNameInfo}
 - If someone says there's no due date, that's fine - just note "no deadline"
-- The contact person is the subject matter expert - ask "Who knows the most about this request and should be contacted for follow-up questions?" They may or may not be the requester.
+
+Contact person collection:
+- Ask "Who knows the most about this request and should be contacted for follow-up questions?"
+- If they tag a Slack user (e.g., "@ermek" or "<@U123ABC>"), pass that directly as contactPersonInput - we'll auto-fetch their name and email
+- If they give a name without a Slack tag, you MUST also ask for the contact person's email
+- The contact person may or may not be the requester
+
 - Once you have everything, use the saveIntegrationRequest tool
 - Confirm the submission with the request ID
 - Keep responses concise - this is Slack, not email
@@ -39,8 +49,7 @@ ${guidelines}
 ${PRIORITY_GUIDANCE}
 
 Current user Slack ID: ${ctx.userId}
-${ctx.userName ? `User's Slack display name: ${ctx.userName}` : ""}
 Current state: ${stateContext}
 
-If the user hasn't started a request yet and says something like "hi" or asks a general question, briefly explain what you do and offer to help them submit an integration request. Start by asking for their name.`
+When starting a new request, acknowledge what they want and ask for the title and description of the integration.`
 }

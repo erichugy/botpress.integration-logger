@@ -33,8 +33,16 @@ export const IntegrationRequestsTable = new Table({
       .string()
       .optional()
       .describe("Due date for the integration if applicable (ISO format or descriptive)"),
-    contactPerson: z
+    contactPersonName: z
       .string()
-      .describe("Subject matter expert to contact for follow-up questions (may differ from requester)"),
+      .describe("Name of the subject matter expert to contact for follow-up questions"),
+    contactPersonEmail: z
+      .string()
+      .optional()
+      .describe("Email of the subject matter expert"),
+    contactPersonSlackId: z
+      .string()
+      .optional()
+      .describe("Slack user ID of the contact person (if provided via Slack mention)"),
   },
 })

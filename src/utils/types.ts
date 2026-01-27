@@ -8,7 +8,7 @@ export type PendingRequest = {
   priority?: PriorityLevel
   endUser?: string
   dueDate?: string
-  contactPerson?: string
+  contactPersonInput?: string
   contactPersonEmail?: string
 }
 

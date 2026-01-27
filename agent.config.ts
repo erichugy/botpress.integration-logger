@@ -28,7 +28,7 @@ export default defineConfig({
           priority: z.enum(["low", "medium", "high", "critical"]).optional(),
           endUser: z.string().optional(),
           dueDate: z.string().optional(),
-          contactPerson: z.string().optional(),
+          contactPersonInput: z.string().optional(),
           contactPersonEmail: z.string().optional(),
         })
         .optional(),
