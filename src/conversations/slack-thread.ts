@@ -31,6 +31,7 @@ export const SlackThread = new Conversation({
     if (commandResult) {
       if (commandResult.shouldClearState) {
         user.state.pendingRequest = undefined
+        user.state.activeConversation = false
       }
       await conversation.send({
         type: "text",
@@ -39,9 +40,10 @@ export const SlackThread = new Conversation({
       return
     }
 
-    const hasPendingRequest = user.state.pendingRequest !== undefined
-    const botHasReplied = conversation.tags["slack:isBotReplyThread"] === "true"
-    const isActiveConversation = hasPendingRequest || botHasReplied
+    const isActiveConversation =
+      user.state.activeConversation === true ||
+      user.state.pendingRequest !== undefined ||
+      conversation.tags["slack:isBotReplyThread"] === "true"
 
     if (!isActiveConversation) {
       const isRelevant = await isIntegrationRelated(text)
@@ -50,6 +52,9 @@ export const SlackThread = new Conversation({
       }
     }
 
+    // Mark conversation as active so we continue responding
+    user.state.activeConversation = true
+
     await execute({
       instructions: buildInstructions({
         userId: slackUserId,
@@ -57,7 +62,7 @@ export const SlackThread = new Conversation({
         pendingRequest: user.state.pendingRequest,
         isPublicChannel: false,
       }),
-      tools: [saveIntegrationRequest],
+      tools: [saveIntegrationRequest, actions.parseRelativeDate.asTool()],
     })
   },
 })

@@ -18,6 +18,8 @@ export default defineConfig({
 
   user: {
     state: z.object({
+      // Track if user is in an active conversation with the bot
+      activeConversation: z.boolean().default(false),
       // Track conversation stage for request collection
       pendingRequest: z
         .object({

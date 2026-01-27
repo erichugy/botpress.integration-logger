@@ -22,15 +22,17 @@ export function buildInstructions(ctx: InstructionContext): string {
   const guidelines = `Guidelines:
 - You MUST collect ALL required information before calling saveIntegrationRequest
 - Ask for missing information one or two questions at a time to keep it conversational
-- Required: title, description, priority, end user, contact person (with email if not a Slack user)
+- Required: title, description, priority, end user, contact person (with email if not a Slack mention)
 - Optional: requester email, due date
 - ${userNameInfo}
-- If someone says there's no due date, that's fine - just note "no deadline"
+- If someone says there's no due date, omit the dueDate field entirely (do NOT pass "-" or "n/a")
+- If the user provides a relative date (like "next Friday" or "end of Q1"), use the parseRelativeDate tool to convert it to an actual date before saving
+- NEVER use placeholder values like "-", "n/a", or empty strings for optional fields - just omit them
 
 Contact person collection:
 - Ask "Who knows the most about this request and should be contacted for follow-up questions?"
-- If they tag a Slack user (e.g., "@ermek" or "<@U123ABC>"), pass that directly as contactPersonInput - we'll auto-fetch their name and email
-- If they give a name without a Slack tag, you MUST also ask for the contact person's email
+- If they tag a Slack user, you'll receive it as a user ID like <@U0A6E7PA7FH> - pass this exactly as contactPersonInput and we'll auto-fetch their name and email
+- If they give just a name (no Slack tag), you MUST ask for the contact person's email before submitting
 - The contact person may or may not be the requester
 
 - Once you have everything, use the saveIntegrationRequest tool

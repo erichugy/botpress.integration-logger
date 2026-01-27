@@ -10,30 +10,37 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
   input: z.object({
     title: z
       .string()
-      .min(3)
+      .min(3, "Title must be at least 3 characters")
       .max(200)
       .describe("Brief, descriptive title for the integration request"),
     description: z
       .string()
-      .min(10)
+      .min(10, "Description must be at least 10 characters")
       .max(2000)
       .describe("Detailed description of what the integration should do"),
     priority: z
       .enum(["low", "medium", "high", "critical"])
       .describe("Priority level: low (nice-to-have), medium (useful), high (important), critical (urgent)"),
-    requestedByName: z.string().describe("Name of the person making this request"),
+    requestedByName: z
+      .string()
+      .min(1, "Requester name is required")
+      .describe("Name of the person making this request"),
     requestedByEmail: z
       .string()
       .email()
       .optional()
       .describe("Email of the person making this request (if provided)"),
-    endUser: z.string().describe("Who is the end user of this integration - who will use it"),
+    endUser: z
+      .string()
+      .min(1, "End user is required")
+      .describe("Who is the end user of this integration - who will use it"),
     dueDate: z
       .string()
       .optional()
       .describe("Due date if there is one (e.g., '2024-03-15' or 'end of Q1' or 'no deadline')"),
     contactPersonInput: z
       .string()
+      .min(1, "Contact person is required")
       .describe(
         "The contact person - can be a Slack mention (e.g., <@U123ABC>) or a name. This is the subject matter expert for follow-up questions."
       ),
@@ -91,6 +98,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
 
     bot.state.totalRequestsSubmitted += 1
     user.state.pendingRequest = undefined
+    user.state.activeConversation = false
 
     return {
       success: true,

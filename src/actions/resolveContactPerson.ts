@@ -1,6 +1,10 @@
 import { Action, actions, z } from "@botpress/runtime"
 
-const SLACK_MENTION_REGEX = /<@([A-Z0-9]+)>/
+// Matches valid Slack user ID mentions like <@U0A6E7PA7FH>
+const SLACK_USER_ID_REGEX = /<@([A-Z0-9]+)>/
+
+// Matches any <@...> pattern (to clean up malformed mentions)
+const SLACK_MENTION_WRAPPER_REGEX = /<@([^>]+)>/
 
 const SlackProfileResponseSchema = z.object({
   displayName: z.string().optional(),
@@ -29,10 +33,12 @@ const resolveContactPerson = new Action({
   }),
   async handler({ input }): Promise<Output> {
     const { contactInput, emailIfProvided } = input
-    const slackMatch = SLACK_MENTION_REGEX.exec(contactInput)
 
-    if (slackMatch) {
-      const slackId = slackMatch[1]
+    // Check for valid Slack user ID mention (e.g., <@U0A6E7PA7FH>)
+    const validSlackMatch = SLACK_USER_ID_REGEX.exec(contactInput)
+
+    if (validSlackMatch) {
+      const slackId = validSlackMatch[1]
 
       try {
         const response = await actions.slack.getUserProfile({ userId: slackId })
@@ -40,7 +46,7 @@ const resolveContactPerson = new Action({
 
         if (result.success) {
           const profile = result.data
-          const name = profile.displayName ?? profile.firstName ?? contactInput
+          const name = profile.displayName ?? profile.firstName ?? slackId
           return {
             name,
             email: emailIfProvided ?? profile.email,
@@ -48,34 +54,49 @@ const resolveContactPerson = new Action({
           }
         }
       } catch {
-        // Failed to fetch profile, use the mention as-is
+        // Failed to fetch profile, return the ID as name
       }
 
       return {
-        name: contactInput,
+        name: slackId,
         email: emailIfProvided,
         slackId,
       }
     }
 
-    // Not a Slack mention - try to infer name from email if no name given
-    let name = contactInput
-    let inferredEmail = emailIfProvided
+    // Check for malformed mention like <@Haris Mahmood> and extract the name
+    const malformedMatch = SLACK_MENTION_WRAPPER_REGEX.exec(contactInput)
+    let cleanedName = contactInput
 
-    if (emailIfProvided && !contactInput) {
-      // Infer name from email (e.g., "john.doe@company.com" -> "John Doe")
+    if (malformedMatch) {
+      cleanedName = malformedMatch[1] // Extract "Haris Mahmood" from "<@Haris Mahmood>"
+    }
+
+    // Handle placeholder values that should be empty
+    if (cleanedName === "-" || cleanedName.toLowerCase() === "n/a" || cleanedName === "") {
+      cleanedName = "Unknown"
+    }
+
+    // If no name but email provided, infer name from email
+    if (emailIfProvided && cleanedName === "Unknown") {
       const emailPrefix = emailIfProvided.split("@")[0]
-      if (emailPrefix) {
-        name = emailPrefix
+      if (emailPrefix && emailPrefix !== "-") {
+        cleanedName = emailPrefix
           .split(/[._-]/)
           .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
           .join(" ")
       }
     }
 
+    // Clean up email if it's a placeholder
+    const cleanedEmail =
+      emailIfProvided && emailIfProvided !== "-" && emailIfProvided.toLowerCase() !== "n/a"
+        ? emailIfProvided
+        : undefined
+
     return {
-      name,
-      email: inferredEmail,
+      name: cleanedName,
+      email: cleanedEmail,
       slackId: undefined,
     }
   },
