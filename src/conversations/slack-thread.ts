@@ -1,6 +1,6 @@
 import { Conversation, actions, user } from "@botpress/runtime"
 
-import { getPlatformConfig } from "../platforms"
+import { getMessageUserId, getPlatformConfig, getUserId, isBotReplyThread } from "../platforms"
 import { parseSlackMessage } from "../platforms/slack"
 // import { slackFormatter } from "../platforms/slack"
 // import { handleCommand } from "../utils/commands"
@@ -27,8 +27,8 @@ export const SlackThread = new Conversation({
     const platform = getPlatformConfig(ORIGIN)
 
     const { slackUserId, displayName } = await actions.getSlackUserInfo({
-      messageUserId: slackMessage.tags["slack:userId"],
-      userTagId: user.tags["slack:id"],
+      messageUserId: getMessageUserId(ORIGIN, slackMessage),
+      userTagId: getUserId(ORIGIN, user),
     })
     console.log('User info:', JSON.stringify({ slackUserId, displayName }));
 
@@ -53,7 +53,7 @@ export const SlackThread = new Conversation({
     const isActiveConversation =
       user.state.activeConversation === true ||
       user.state.pendingRequest !== undefined ||
-      conversation.tags["slack:isBotReplyThread"] === "true"
+      isBotReplyThread(ORIGIN, conversation)
 
     if (!isActiveConversation) {
       const isRelevant = await isIntegrationRelated(text)

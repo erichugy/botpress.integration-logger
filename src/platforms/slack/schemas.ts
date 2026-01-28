@@ -76,14 +76,6 @@ export type SlackConversationTags = z.infer<typeof SlackConversationTagsSchema>
 export type SlackConversationData = z.infer<typeof SlackConversationDataSchema>
 export type SlackConversation = z.infer<typeof SlackConversationSchema>
 
-export function getSlackUserId(message: SlackMessage, user: SlackUser): string {
-  return message.tags["slack:userId"] ?? user.tags["slack:id"]
-}
-
-export function isBotReplyThread(conversation: SlackConversation): boolean {
-  return conversation.conversation.tags["slack:isBotReplyThread"] === "true"
-}
-
 type MessageLike = { type?: string | number | symbol }
 
 export function isSlackMessage(message: MessageLike): message is SlackMessage {

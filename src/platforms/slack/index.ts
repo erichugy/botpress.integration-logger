@@ -1,11 +1,7 @@
 export { slackConfig } from "./config"
 export { slackFormatter } from "./formatter"
-export {
-  getSlackUserId,
-  isBotReplyThread,
-  isSlackMessage,
-  parseSlackMessage,
-} from "./schemas"
+export { isSlackMessage, parseSlackMessage } from "./schemas"
+export { SLACK_TAG_KEYS } from "./tags"
 export type {
   SlackConversation,
   SlackConversationData,

@@ -1,6 +1,8 @@
 import { Autonomous, actions, bot, user, z } from "@botpress/runtime"
 
+import { getUserId } from "../platforms"
 import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
+import type { Origin } from "../types"
 
 export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
   name: "saveIntegrationRequest",
@@ -82,7 +84,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     ccList,
     origin,
   }) => {
-    const requestedBySlackId = user.tags["slack:id"] ?? "unknown"
+    const requestedByPlatformId = getUserId(origin as Origin, user) ?? "unknown"
 
     // NOTE: resolveSlackContactPerson handles both Slack mentions and plain names
     const contactPerson = await actions.resolveSlackContactPerson({
@@ -98,7 +100,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
           priority,
           status: "new",
           origin: origin ?? "slack",
-          requestedBy: requestedBySlackId,
+          requestedBy: requestedByPlatformId,
           requestedByName,
           requestedByEmail,
           endUser,
