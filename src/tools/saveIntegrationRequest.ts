@@ -1,5 +1,5 @@
 import { Autonomous, actions, bot, user, z } from "@botpress/runtime"
-import { getUserId } from "../platforms"
+import { getUserId } from "../platforms/identity"
 import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
 import type { Origin } from "../types"
 
