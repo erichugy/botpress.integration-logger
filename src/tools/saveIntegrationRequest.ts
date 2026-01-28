@@ -84,8 +84,8 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
   }) => {
     const requestedBySlackId = user.tags["slack:id"] ?? "unknown"
 
-    // NOTE: resolveContactPerson handles both Slack mentions and plain names
-    const contactPerson = await actions.resolveContactPerson({
+    // NOTE: resolveSlackContactPerson handles both Slack mentions and plain names
+    const contactPerson = await actions.resolveSlackContactPerson({
       contactInput: contactPersonInput,
       emailIfProvided: contactPersonEmail,
     })

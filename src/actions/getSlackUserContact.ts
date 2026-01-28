@@ -1,4 +1,4 @@
-import { Action, actions, z } from "@botpress/runtime"
+import { Action, actions, context, z } from "@botpress/runtime"
 
 const SlackProfileResponseSchema = z.object({
   displayName: z.string().optional(),
@@ -31,28 +31,36 @@ const getSlackUserContact = new Action({
   }),
 
   async handler({ input }): Promise<Output> {
+    const logger = context.get("logger")
     const { slackUserId } = input
+    logger.info("getSlackUserContact called", { input })
 
     // NOTE: LLM sometimes passes mention format <@U123> instead of just U123
     const cleanId = slackUserId.replace(/<@([A-Z0-9]+)>/, "$1")
+    logger.debug("Cleaned Slack ID", { original: slackUserId, cleanId })
 
     try {
+      logger.info("Calling slack.getUserProfile", { userId: cleanId })
       const response = await actions.slack.getUserProfile({ userId: cleanId })
+      logger.info("Slack API response", { response })
+
       const result = SlackProfileResponseSchema.safeParse(response)
 
       if (!result.success) {
+        logger.error("Failed to parse Slack profile response", { error: result.error })
         return { name: cleanId, email: undefined, slackId: cleanId }
       }
 
       const profile = result.data
-      const name = profile.displayName ?? profile.firstName ?? cleanId
+      logger.debug("Parsed profile", { profile })
 
-      return {
-        name,
-        email: profile.email,
-        slackId: cleanId,
-      }
-    } catch {
+      const name = profile.displayName ?? profile.firstName ?? cleanId
+      const output = { name, email: profile.email, slackId: cleanId }
+
+      logger.info("getSlackUserContact returning", { output })
+      return output
+    } catch (error) {
+      logger.error("getSlackUserContact failed", { error: error instanceof Error ? error.message : String(error) })
       return { name: cleanId, email: undefined, slackId: cleanId }
     }
   },

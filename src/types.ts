@@ -12,9 +12,13 @@ export type PendingRequest = {
   contactPersonEmail?: string
 }
 
+export type Origin = "slack" // NOTE: Only Slack is supported for now
+
 export type InstructionContext = {
   userId: string
   userName?: string
+  userEmail?: string
   pendingRequest?: PendingRequest
   isPublicChannel: boolean
+  origin: Origin
 }

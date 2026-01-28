@@ -1,4 +1,4 @@
-import { Action, actions, z } from "@botpress/runtime"
+import { Action, actions, z, context } from "@botpress/runtime"
 
 // Matches valid Slack user ID mentions like <@U0A6E7PA7FH>
 const SLACK_USER_ID_REGEX = /<@([A-Z0-9]+)>/
@@ -13,26 +13,24 @@ const SlackProfileResponseSchema = z.object({
   email: z.string().optional(),
 })
 
-type Output = {
-  name: string
-  email: string | undefined
-  slackId: string | undefined
-}
+const outputSchema = z.object({
+  name: z.string(),
+  email: z.string().optional(),
+  slackId: z.string().optional(),
+})
 
-const resolveContactPerson = new Action({
-  name: "resolveContactPerson",
+const resolveSlackContactPerson = new Action({
+  name: "resolveSlackContactPerson",
   description: "Resolve contact person info from Slack mention or name/email",
   input: z.object({
     contactInput: z.string().describe("Slack mention (e.g., <@U123ABC>) or name"),
     emailIfProvided: z.string().optional().describe("Email if explicitly provided"),
   }),
-  output: z.object({
-    name: z.string(),
-    email: z.string().optional(),
-    slackId: z.string().optional(),
-  }),
-  async handler({ input }): Promise<Output> {
+  output: outputSchema,
+  async handler({ input }): Promise<z.infer<typeof outputSchema>> {
     const { contactInput, emailIfProvided } = input
+    const logger = context.get("logger")
+    logger.info("resolveSlackContactPerson called", { input })
 
     // Check for valid Slack user ID mention (e.g., <@U0A6E7PA7FH>)
     const validSlackMatch = SLACK_USER_ID_REGEX.exec(contactInput)
@@ -102,4 +100,4 @@ const resolveContactPerson = new Action({
   },
 })
 
-export default resolveContactPerson
+export default resolveSlackContactPerson

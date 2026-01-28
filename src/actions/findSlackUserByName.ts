@@ -1,4 +1,4 @@
-import { Action, actions, z } from "@botpress/runtime"
+import { Action, actions, context, z } from "@botpress/runtime"
 
 const FindTargetResponseSchema = z.object({
   targets: z.array(
@@ -42,46 +42,65 @@ const findSlackUserByName = new Action({
   }),
 
   async handler({ input }): Promise<Output> {
+    const logger = context.get("logger")
     const { name } = input
+    logger.info("findSlackUserByName called", { input })
 
     try {
       const response = await actions.slack.findTarget({
         query: name,
         channel: "dm",
       })
+      logger.info("findTarget response", { response })
 
       const result = FindTargetResponseSchema.safeParse(response)
 
-      if (!result.success || result.data.targets.length === 0) {
+      if (!result.success) {
+        logger.error("Failed to parse findTarget response", { error: result.error })
+        return { found: false, slackId: undefined, name: undefined, email: undefined }
+      }
+
+      if (result.data.targets.length === 0) {
+        logger.info("No targets found for query", { query: name })
         return { found: false, slackId: undefined, name: undefined, email: undefined }
       }
 
       const target = result.data.targets[0]
+      logger.debug("First target", { target })
+
       const slackId = target.tags.id
+      logger.debug("Extracted slackId", { slackId })
 
       if (!slackId) {
+        logger.info("No slackId in target tags", { displayName: target.displayName })
         return { found: false, slackId: undefined, name: target.displayName, email: undefined }
       }
 
       // NOTE: findTarget doesn't return email, so we fetch the full profile
       try {
+        logger.info("Fetching full profile", { slackId })
         const profileResponse = await actions.slack.getUserProfile({ userId: slackId })
+        logger.info("getUserProfile response", { profileResponse })
+
         const profileResult = SlackProfileResponseSchema.safeParse(profileResponse)
 
         if (profileResult.success) {
-          return {
+          const output = {
             found: true,
             slackId,
             name: profileResult.data.displayName ?? profileResult.data.firstName ?? target.displayName,
             email: profileResult.data.email,
           }
+          logger.info("findSlackUserByName returning", { output })
+          return output
         }
-      } catch {
-        // NOTE: Profile fetch failed, fall through to return partial data
+      } catch (profileError) {
+        logger.error("Profile fetch failed", { error: profileError instanceof Error ? profileError.message : String(profileError) })
       }
 
       return { found: true, slackId, name: target.displayName, email: undefined }
-    } catch {
+    } catch (error) {
+      logger.error("findSlackUserByName failed", { error: error instanceof Error ? error.message : String(error) })
       return { found: false, slackId: undefined, name: undefined, email: undefined }
     }
   },

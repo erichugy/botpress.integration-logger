@@ -1,11 +1,14 @@
 import { Conversation, actions, user } from "@botpress/runtime"
 
-import { saveIntegrationRequest } from "../tools/saveIntegrationRequest"
-import { handleCommand } from "../utils/commands"
-import { slackFormatter } from "../utils/formatters"
+import { getPlatformConfig } from "../platforms"
+import { parseSlackMessage } from "../platforms/slack"
+// import { slackFormatter } from "../platforms/slack"
+// import { handleCommand } from "../utils/commands"
 import { buildInstructions } from "../utils/instructions"
 import { isIntegrationRelated } from "../utils/relevance"
-import { parseSlackMessage } from "../utils/slack-schemas"
+import type { Origin } from "../types"
+
+const ORIGIN: Origin = "slack"
 
 export const SlackThread = new Conversation({
   channel: "slack.thread",
@@ -21,24 +24,31 @@ export const SlackThread = new Conversation({
     }
 
     const text = slackMessage.payload.text
+    const platform = getPlatformConfig(ORIGIN)
 
     const { slackUserId, displayName } = await actions.getSlackUserInfo({
       messageUserId: slackMessage.tags["slack:userId"],
       userTagId: user.tags["slack:id"],
     })
+    console.log('User info:', JSON.stringify({ slackUserId, displayName }));
 
-    const commandResult = handleCommand(text, slackFormatter, slackUserId)
-    if (commandResult) {
-      if (commandResult.shouldClearState) {
-        user.state.pendingRequest = undefined
-        user.state.activeConversation = false
-      }
-      await conversation.send({
-        type: "text",
-        payload: { text: commandResult.response },
-      })
-      return
-    }
+    const requesterContact = await actions.getSlackUserContact({
+      slackUserId,
+    })
+    console.log('Requester contact:', JSON.stringify(requesterContact));
+
+    // const commandResult = handleCommand(text, slackFormatter, ORIGIN, slackUserId)
+    // if (commandResult) {
+    //   if (commandResult.shouldClearState) {
+    //     user.state.pendingRequest = undefined
+    //     user.state.activeConversation = false
+    //   }
+    //   await conversation.send({
+    //     type: "text",
+    //     payload: { text: commandResult.response },
+    //   })
+    //   return
+    // }
 
     const isActiveConversation =
       user.state.activeConversation === true ||
@@ -59,15 +69,12 @@ export const SlackThread = new Conversation({
       instructions: buildInstructions({
         userId: slackUserId,
         userName: displayName,
+        userEmail: requesterContact.email,
         pendingRequest: user.state.pendingRequest,
         isPublicChannel: false,
+        origin: ORIGIN,
       }),
-      tools: [
-        saveIntegrationRequest,
-        actions.parseRelativeDate.asTool(),
-        actions.getSlackUserContact.asTool(),
-        actions.findSlackUserByName.asTool(),
-      ],
+      tools: platform.getTools(),
     })
   },
 })

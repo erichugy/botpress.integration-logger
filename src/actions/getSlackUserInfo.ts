@@ -1,4 +1,4 @@
-import { Action, actions, z } from "@botpress/runtime"
+import { Action, actions, z, context } from "@botpress/runtime"
 
 const SlackProfileResponseSchema = z.object({
   displayName: z.string().optional(),
@@ -19,6 +19,7 @@ const getSlackUserInfo = new Action({
     displayName: z.string().optional(),
   }),
   handler: async ({ input }) => {
+    const logger = context.get("logger")
     const slackUserId = input.messageUserId ?? input.userTagId ?? ""
 
     if (!slackUserId) return { slackUserId, displayName: undefined }

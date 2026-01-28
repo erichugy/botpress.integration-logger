@@ -1,4 +1,6 @@
-import type { MessageFormatter } from "./formatters"
+import { getPlatformConfig } from "../platforms"
+import type { MessageFormatter } from "../platforms"
+import type { Origin } from "../types"
 
 export function buildHelpText(fmt: MessageFormatter): string {
   return `${fmt.bold("Integration Request Bot")}
@@ -37,9 +39,11 @@ export type CommandResult = {
 export function handleCommand(
   text: string,
   fmt: MessageFormatter,
-  userId?: string
+  origin: Origin,
+  userId?: string,
 ): CommandResult | null {
-  const userTag = userId ? `<@${userId}> ` : ""
+  const platform = getPlatformConfig(origin)
+  const userTag = userId ? platform.mentionFormat(userId).replace(/[{}""]/g, "") + " " : ""
   const normalized = text.toLowerCase().trim()
 
   if (normalized === "/cancel" || normalized === "cancel") {
