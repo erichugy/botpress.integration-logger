@@ -1,5 +1,4 @@
 import { actions } from "@botpress/runtime"
-
 import { saveIntegrationRequest } from "../../tools/saveIntegrationRequest"
 import type { PlatformConfig } from "../types"
 

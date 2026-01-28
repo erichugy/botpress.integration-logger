@@ -33,17 +33,12 @@ const getSlackUserContact = new Action({
   async handler({ input }): Promise<Output> {
     const logger = context.get("logger")
     const { slackUserId } = input
-    logger.info("getSlackUserContact called", { input })
 
     // NOTE: LLM sometimes passes mention format <@U123> instead of just U123
     const cleanId = slackUserId.replace(/<@([A-Z0-9]+)>/, "$1")
-    logger.debug("Cleaned Slack ID", { original: slackUserId, cleanId })
 
     try {
-      logger.info("Calling slack.getUserProfile", { userId: cleanId })
       const response = await actions.slack.getUserProfile({ userId: cleanId })
-      logger.info("Slack API response", { response })
-
       const result = SlackProfileResponseSchema.safeParse(response)
 
       if (!result.success) {
@@ -52,13 +47,10 @@ const getSlackUserContact = new Action({
       }
 
       const profile = result.data
-      logger.debug("Parsed profile", { profile })
-
       const name = profile.displayName ?? profile.firstName ?? cleanId
-      const output = { name, email: profile.email, slackId: cleanId }
 
-      logger.info("getSlackUserContact returning", { output })
-      return output
+      logger.debug("Fetched Slack profile", { slackId: cleanId, name, email: profile.email })
+      return { name, email: profile.email, slackId: cleanId }
     } catch (error) {
       logger.error("getSlackUserContact failed", { error: error instanceof Error ? error.message : String(error) })
       return { name: cleanId, email: undefined, slackId: cleanId }

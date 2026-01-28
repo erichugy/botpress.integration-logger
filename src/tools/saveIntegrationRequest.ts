@@ -1,5 +1,4 @@
 import { Autonomous, actions, bot, user, z } from "@botpress/runtime"
-
 import { getUserId } from "../platforms"
 import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
 import type { Origin } from "../types"
@@ -50,10 +49,6 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
       .string()
       .email()
       .describe("Email of the contact person (REQUIRED - use getSlackUserContact if you have their Slack ID, otherwise ask the user)"),
-    contactPersonSlackId: z
-      .string()
-      .optional()
-      .describe("Slack user ID of the contact person if available (e.g., U0A6E7PA7FH)"),
     ccList: z
       .array(z.string().email())
       .optional()
@@ -80,7 +75,6 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     dueDate,
     contactPersonInput,
     contactPersonEmail,
-    contactPersonSlackId,
     ccList,
     origin,
   }) => {
@@ -107,7 +101,6 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
           dueDate,
           contactPersonName: contactPerson.name,
           contactPersonEmail: contactPersonEmail,
-          contactPersonSlackId: contactPersonSlackId ?? contactPerson.slackId,
           ccList,
         },
       ],

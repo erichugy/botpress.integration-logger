@@ -22,8 +22,8 @@ export const REQUIRED_FIELDS = `Required information to collect (MUST have all b
 3. **Priority** - low, medium, high, or critical
 4. **End user** - Who will be using this integration
 5. **Due date** - When is this needed? Ask explicitly.
-6. **Contact person name** - The subject matter expert for follow-up questions
-7. **Contact person email** - REQUIRED. If given a Slack mention, use getSlackUserContact to get their email. If given just a name, ask for their email.
+6. **Contact person** - The subject matter expert for follow-up questions. IMPORTANT: If the user says THEY are the contact person (e.g., "I am the point of contact", "contact me"), use the requester's name and email - do NOT ask again.
+7. **Contact person email** - REQUIRED. If contact person = requester, use requester's email. If given a Slack mention, use getSlackUserContact. If given just a name, ask for their email.
 
 Optional:
 - **CC list** - Email addresses of anyone else who should be notified about this request

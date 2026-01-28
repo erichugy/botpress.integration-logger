@@ -1,5 +1,4 @@
 import type { Origin } from "../types"
-
 import { slackConfig } from "./slack"
 import type { PlatformConfig } from "./types"
 

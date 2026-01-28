@@ -30,7 +30,6 @@ const resolveSlackContactPerson = new Action({
   async handler({ input }): Promise<z.infer<typeof outputSchema>> {
     const { contactInput, emailIfProvided } = input
     const logger = context.get("logger")
-    logger.info("resolveSlackContactPerson called", { input })
 
     // Check for valid Slack user ID mention (e.g., <@U0A6E7PA7FH>)
     const validSlackMatch = SLACK_USER_ID_REGEX.exec(contactInput)
@@ -45,11 +44,9 @@ const resolveSlackContactPerson = new Action({
         if (result.success) {
           const profile = result.data
           const name = profile.displayName ?? profile.firstName ?? slackId
-          return {
-            name,
-            email: emailIfProvided ?? profile.email,
-            slackId,
-          }
+          const email = emailIfProvided ?? profile.email
+          logger.debug("Resolved contact from Slack", { slackId, name, email })
+          return { name, email, slackId }
         }
       } catch {
         // Failed to fetch profile, return the ID as name

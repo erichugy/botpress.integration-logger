@@ -1,5 +1,4 @@
 import type { Origin } from "../types"
-
 import { SLACK_TAG_KEYS } from "./slack/tags"
 
 type PlatformTagKeys = {

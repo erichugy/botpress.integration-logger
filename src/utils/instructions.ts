@@ -48,8 +48,8 @@ REQUIRED FIELDS (must explicitly ask for each unless already provided):
 3. Priority - Ask which priority level (low/medium/high/critical)
 4. End user - Ask who will be using this integration
 5. Due date - Ask when this is needed (use parseRelativeDate to convert to ISO format)
-6. Contact person name - Ask who the subject matter expert is for follow-up questions
-7. Contact person email - REQUIRED. See "Getting emails" below.
+6. Contact person - Ask who the subject matter expert is for follow-up questions. IMPORTANT: If the user says THEY are the contact person (e.g., "I am the point of contact", "contact me", "I'll be the contact"), use the requester's name and email you already have.
+7. Contact person email - REQUIRED. If contact person = requester, use requester's email. Otherwise see "Getting emails" below.
 
 OPTIONAL FIELDS (ask about these):
 - CC list - Ask "Is there anyone else who should be notified about updates to this request? If so, please provide their email addresses."

@@ -1,5 +1,4 @@
 import type { actions } from "@botpress/runtime"
-
 import type { Origin } from "../types"
 
 export type MessageFormatter = {

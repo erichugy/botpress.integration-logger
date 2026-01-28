@@ -1,9 +1,6 @@
 import { Conversation, actions, user } from "@botpress/runtime"
-
 import { getMessageUserId, getPlatformConfig, getUserId, isBotReplyThread } from "../platforms"
 import { parseSlackMessage } from "../platforms/slack"
-// import { slackFormatter } from "../platforms/slack"
-// import { handleCommand } from "../utils/commands"
 import { buildInstructions } from "../utils/instructions"
 import { isIntegrationRelated } from "../utils/relevance"
 import type { Origin } from "../types"
@@ -30,25 +27,10 @@ export const SlackThread = new Conversation({
       messageUserId: getMessageUserId(ORIGIN, slackMessage),
       userTagId: getUserId(ORIGIN, user),
     })
-    console.log('User info:', JSON.stringify({ slackUserId, displayName }));
 
     const requesterContact = await actions.getSlackUserContact({
       slackUserId,
     })
-    console.log('Requester contact:', JSON.stringify(requesterContact));
-
-    // const commandResult = handleCommand(text, slackFormatter, ORIGIN, slackUserId)
-    // if (commandResult) {
-    //   if (commandResult.shouldClearState) {
-    //     user.state.pendingRequest = undefined
-    //     user.state.activeConversation = false
-    //   }
-    //   await conversation.send({
-    //     type: "text",
-    //     payload: { text: commandResult.response },
-    //   })
-    //   return
-    // }
 
     const isActiveConversation =
       user.state.activeConversation === true ||
