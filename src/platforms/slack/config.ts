@@ -1,5 +1,7 @@
 import { actions } from "@botpress/runtime"
 import { saveIntegrationRequest } from "../../tools/saveIntegrationRequest"
+import { searchIntegrationRequests } from "../../tools/searchIntegrationRequests"
+import { updateIntegrationRequest } from "../../tools/updateIntegrationRequest"
 import type { PlatformConfig } from "../types"
 
 export const slackConfig: PlatformConfig = {
@@ -7,6 +9,8 @@ export const slackConfig: PlatformConfig = {
   name: "Slack",
   getTools: () => [
     saveIntegrationRequest,
+    searchIntegrationRequests,
+    updateIntegrationRequest,
     actions.parseRelativeDate.asTool(),
     actions.getSlackUserContact.asTool(),
     actions.findSlackUserByName.asTool(),

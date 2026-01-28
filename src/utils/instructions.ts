@@ -2,7 +2,7 @@ import { PRIORITY_GUIDANCE, REQUIRED_FIELDS } from "./constants"
 import { getPlatformConfig } from "../platforms"
 import type { InstructionContext } from "../types"
 
-const BASE_ROLE = `You are an Integration Request Bot that helps users submit integration requests. Your job is to collect all required information before saving the request.`
+const BASE_ROLE = `You are an Integration Request Bot that helps users submit, search, and manage integration requests. Your job is to collect all required information before saving new requests, and help users find and update existing ones.`
 
 const CHANNEL_HINTS = {
   public: `You are responding in a thread. Keep responses concise but friendly.`,
@@ -70,7 +70,18 @@ Submitting:
 - origin is "${ctx.origin}"
 - Confirm the submission with the request ID
 - Keep responses concise - this is ${platform.name}, not email
-- ALWAYS start your message by tagging the user: ${platform.mentionFormat(ctx.userId)}`
+- ALWAYS start your message by tagging the user: ${platform.mentionFormat(ctx.userId)}
+
+Searching requests:
+- Use searchIntegrationRequests to find existing requests
+- Can search by keyword (matches title/description), status, priority, or requester
+- Example queries: "show all high priority requests", "what requests are in progress?", "find my requests"
+
+Updating requests:
+- Use updateIntegrationRequest to modify existing requests by ID
+- Updatable fields: status, priority, dueDate, contactPersonName, contactPersonEmail, ccList
+- Cannot change core fields: title, description, requestedBy, origin, endUser
+- Always confirm the update was successful and show the new values`
 
   return `${BASE_ROLE}
 
