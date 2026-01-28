@@ -11,4 +11,4 @@ export function getPlatformConfig(origin: Origin): PlatformConfig {
 }
 
 export { getMessageUserId, getUserId, isBotReplyThread } from "./identity"
-export type { MessageFormatter, PlatformConfig } from "./types"
+export type { PlatformConfig } from "./types"

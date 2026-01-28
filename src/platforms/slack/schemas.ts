@@ -35,54 +35,9 @@ const SlackMessageSchema = z.object({
   tags: SlackMessageTagsSchema,
 })
 
-const SlackUserTagsSchema = z.object({
-  "slack:id": z.string(),
-})
-
-const SlackUserSchema = z.object({
-  id: z.string(),
-  state: z.record(z.string()),
-  tags: SlackUserTagsSchema,
-})
-
-const SlackConversationTagsSchema = z.object({
-  "slack:id": z.string(),
-  "slack:thread": z.string(),
-  "slack:isBotReplyThread": z.string().optional(),
-})
-
-const SlackConversationDataSchema = z.object({
-  id: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  channel: z.string(),
-  integration: z.literal("slack"),
-  tags: SlackConversationTagsSchema,
-})
-
-const SlackConversationSchema = z.object({
-  id: z.string(),
-  channel: z.literal("slack.thread"),
-  integration: z.literal("slack"),
-  alias: z.literal("slack"),
-  conversation: SlackConversationDataSchema,
-})
-
-export type SlackMessageTags = z.infer<typeof SlackMessageTagsSchema>
 export type SlackMessage = z.infer<typeof SlackMessageSchema>
-export type SlackUserTags = z.infer<typeof SlackUserTagsSchema>
-export type SlackUser = z.infer<typeof SlackUserSchema>
-export type SlackConversationTags = z.infer<typeof SlackConversationTagsSchema>
-export type SlackConversationData = z.infer<typeof SlackConversationDataSchema>
-export type SlackConversation = z.infer<typeof SlackConversationSchema>
 
-type MessageLike = { type?: string | number | symbol }
-
-export function isSlackMessage(message: MessageLike): message is SlackMessage {
-  return SlackMessageSchema.safeParse(message).success
-}
-
-export function parseSlackMessage(message: MessageLike): SlackMessage | null {
+export function parseSlackMessage(message: unknown): SlackMessage | null {
   const result = SlackMessageSchema.safeParse(message)
   return result.success ? result.data : null
 }
