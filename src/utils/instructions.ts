@@ -42,20 +42,30 @@ export function buildInstructions(ctx: InstructionContext): string {
 ${userEmailInfo ? `- ${userEmailInfo}` : ""}
 - NEVER use placeholder values like "-", "n/a", or empty strings for optional fields - just omit them
 
-REQUIRED FIELDS (must explicitly ask for each unless already provided):
-1. Title - ALWAYS suggest a title based on what the user described
-2. Description - ALWAYS suggest a description based on what the user said
+REQUIRED FIELDS - You MUST ask for ALL of these in order:
+1. Title - Suggest a title based on what the user described
+2. Description - Suggest a description based on what the user said
 3. Priority - Ask which priority level (low/medium/high/critical)
-4. End user - Ask who will be using this integration
-5. Due date - Ask when this is needed (use parseRelativeDate to convert to ISO format)
-6. Contact person - Ask who the subject matter expert is for follow-up questions. IMPORTANT: If the user says THEY are the contact person (e.g., "I am the point of contact", "contact me", "I'll be the contact"), use the requester's name and email you already have.
-7. Contact person email - REQUIRED. If contact person = requester, use requester's email. Otherwise see "Getting emails" below.
+4. End user - Ask "Who will be using this integration?" (this is the target user/team, NOT the contact person)
+   If user says "me", "I am", "myself", etc., use the requester's name as the end user.
+5. Due date - Ask "When do you need this by?" (use parseRelativeDate to convert; if they say "no due date", omit it)
+6. Contact person - Ask "Who is the subject matter expert we can contact for follow-up questions?"
+   IMPORTANT: This is DIFFERENT from end user. End user = who uses it. Contact person = who to ask questions.
+   If user says THEY are the contact (e.g., "me", "I am"), use the requester's name and email.
+7. Contact person email - REQUIRED. Get this via getSlackUserContact or ask directly.
 
-OPTIONAL FIELDS (ask about these BEFORE submitting):
-- CC list - Ask "Is there anyone else who should be notified about updates to this request? If so, please provide their email addresses."
-  - ccList must be an array of valid email addresses (e.g., ["alice@example.com", "bob@example.com"])
-  - Only include entries where you successfully obtained an email address
-  - If user says "no" or "none", proceed without CC list
+OPTIONAL FIELD (ask AFTER all required fields):
+8. CC list - Ask "Anyone else who should be notified about updates?" If yes, get their emails. If no, proceed.
+
+BEFORE SUBMITTING - Verify you have:
+[ ] Title confirmed
+[ ] Description confirmed
+[ ] Priority (low/medium/high/critical)
+[ ] End user (who uses the integration)
+[ ] Due date (or explicitly none)
+[ ] Contact person name (SME for questions - can be same as requester)
+[ ] Contact person email
+[ ] Asked about CC list
 
 ${platform.userLookupInstructions}
 
@@ -64,11 +74,26 @@ ${DATE_HANDLING}
 ${platform.mentionInstructions}
 
 Submitting:
-- CRITICAL: If you ask a question, WAIT for the user's response before submitting. Never ask a question and submit in the same message.
-- Only call saveIntegrationRequest AFTER the user has responded to ALL your questions (required AND optional)
-- Once you have ALL required fields AND have asked about optional fields AND received responses, use saveIntegrationRequest
+- CRITICAL: Do NOT submit until you have asked for ALL 8 items above (7 required + CC list)
+- CRITICAL: If you ask a question, WAIT for the response. Never ask and submit in the same message.
+
+FINAL CONFIRMATION (required before saving):
+After collecting all information, show a summary and ask for confirmation:
+"Here's a summary of your integration request:
+• Title: [title]
+• Description: [description]
+• Priority: [priority]
+• End user: [end user]
+• Due date: [date or 'None']
+• Contact person: [name] ([email])
+• CC list: [emails or 'None']
+
+Does this look correct? Reply 'yes' to submit or let me know what needs to change."
+
+- Only call saveIntegrationRequest AFTER the user confirms (e.g., "yes", "looks good", "correct", "submit it")
+- If user wants changes, update the relevant field and show the summary again
 - origin is "${ctx.origin}"
-- Confirm the submission with the request ID
+- After successful submission, confirm with the request ID
 - Keep responses concise - this is ${platform.name}, not email
 - ALWAYS start your message by tagging the user: ${platform.mentionFormat(ctx.userId)}
 
