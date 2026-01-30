@@ -1,11 +1,10 @@
-import { Conversation, actions, user, z } from "@botpress/runtime";
+import { Conversation, actions, user, z, context } from "@botpress/runtime";
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms";
 import { isBotMentionedInMessage, parseSlackMessage } from "../platforms/slack";
 import { buildInstructions } from "../utils/instructions";
 import type { Origin } from "../types";
 
 const ORIGIN: Origin = "slack";
-const SLACK_BOT_USERNAME = process.env.SLACK_BOT_USERNAME ?? "";
 
 export const SlackThread = new Conversation({
   channel: "slack.thread",
@@ -45,7 +44,7 @@ export const SlackThread = new Conversation({
     // Check if bot is mentioned in current message
     const isBotMentionedNow = isBotMentionedInMessage(
       slackMessage.payload.mentions,
-      SLACK_BOT_USERNAME,
+      context.get("configuration").SLACK_BOT_USERNAME,
     );
 
     // Only respond if bot was mentioned at some point in this conversation

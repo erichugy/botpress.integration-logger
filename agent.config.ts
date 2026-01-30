@@ -44,8 +44,7 @@ export default defineConfig({
 
   configuration: {
     schema: z.object({
-      // Configuration schema for your agent
-      // Accessible via `configuration` export
+      SLACK_BOT_USERNAME: z.string(),
     }),
   },
 
