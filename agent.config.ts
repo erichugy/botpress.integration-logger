@@ -61,7 +61,7 @@ export default defineConfig({
           clientSecret: process.env.SLACK_CLIENT_SECRET,
           typingIndicatorEmoji: true,
           replyBehaviour: {
-            location: "thread",
+            location: "channel",
             onlyOnBotMention: false,
           },
         },
