@@ -17,32 +17,16 @@ export default defineConfig({
   },
 
   user: {
-    state: z.object({
-      // Track if user is in an active conversation with the bot
-      activeConversation: z.boolean().default(false),
-      // Track conversation stage for request collection
-      pendingRequest: z
-        .object({
-          requestedByName: z.string().optional(),
-          requestedByEmail: z.string().optional(),
-          title: z.string().optional(),
-          description: z.string().optional(),
-          priority: z.enum(["low", "medium", "high", "critical"]).optional(),
-          endUser: z.string().optional(),
-          dueDate: z.string().optional(),
-          contactPersonInput: z.string().optional(),
-          contactPersonEmail: z.string().optional(),
-        })
-        .optional(),
-    }),
-    tags: {
-      // user-level tags
-    }
+    state: z.object({}),
+    tags: {},
   },
 
   conversation: {
     tags: {
-      // Conversation-level tags
+      botMentioned: {
+        title: "Bot Mentioned",
+        description: "Whether the bot has been mentioned in this conversation",
+      },
     },
   },
 
