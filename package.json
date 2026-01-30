@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@botpress/runtime": "latest",
+    "@botpress/sdk": "latest",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

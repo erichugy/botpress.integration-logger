@@ -42,7 +42,7 @@ export function buildInstructions(ctx: InstructionContext): string {
 ${userEmailInfo ? `- ${userEmailInfo}` : ""}
 - NEVER use placeholder values like "-", "n/a", or empty strings for optional fields - just omit them
 
-REQUIRED FIELDS - You MUST ask for ALL of these in order:
+REQUIRED FIELDS - You MUST ask for ALL of these:
 1. Title - Suggest a title based on what the user described
 2. Description - Suggest a description based on what the user said
 3. Priority - Ask which priority level (low/medium/high/critical)
@@ -124,6 +124,9 @@ Current state: ${stateContext}
 
 When starting a new request:
 1. Acknowledge what they want
-2. Suggest a title and description based on what they said, and ask them to confirm or modify
-3. Then proceed to collect the remaining required fields`
+2. Suggest a title and description based on what they said
+3. Ask for the remaining required fields
+4. Ask them to confirm or modify
+5. If user wants changes, update the relevant field and show the summary again
+`
 }
