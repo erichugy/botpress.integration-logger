@@ -1,4 +1,5 @@
 import type { SlackMention } from "./schemas";
+import { context } from "@botpress/runtime";
 import { RuntimeError } from "@botpress/sdk";
 
 /**
@@ -14,9 +15,12 @@ export function isBotMentionedInMessage(
 ): boolean {
   if (!botUsername) {
     throw new RuntimeError(
-      "Bot username is not defined. Please add it to .env.SLACK_BOT_USERNAME",
+      "Bot username is not defined. Please add it to .env.SLACK_BOT_USERNAME or provide it as a parameter",
     );
   }
 
+  const logger = context.get("logger");
+  logger.debug("isBotMentionedInMessage - mentions", mentions);
+  logger.debug("isBotMentionedInMessage - botUsername", botUsername);
   return mentions.some((mention) => mention.user.name === botUsername || mention.user.id === botUsername);
 }
