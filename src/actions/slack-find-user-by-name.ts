@@ -25,8 +25,8 @@ type Output = {
   email: string | undefined
 }
 
-const findSlackUserByName = new Action({
-  name: "findSlackUserByName",
+const slackFindUserByName = new Action({
+  name: "slackFindUserByName",
   description:
     "Search for a Slack user by their name and get their Slack ID and contact info. Use this when you have a user's name (like 'Ermek Barmashev') but need their Slack ID to mention them or get their contact details.",
 
@@ -89,10 +89,10 @@ const findSlackUserByName = new Action({
       logger.debug("Slack user lookup", { query: name, found: true, slackId, name: target.displayName })
       return { found: true, slackId, name: target.displayName, email: undefined }
     } catch (error) {
-      logger.error("findSlackUserByName failed", { error: error instanceof Error ? error.message : String(error) })
+      logger.error("slackFindUserByName failed", { error: error instanceof Error ? error.message : String(error) })
       return { found: false, slackId: undefined, name: undefined, email: undefined }
     }
   },
 })
 
-export default findSlackUserByName
+export default slackFindUserByName

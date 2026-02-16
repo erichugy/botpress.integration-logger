@@ -1,6 +1,7 @@
 import { Autonomous, actions, bot, user, z } from "@botpress/runtime"
 import { getUserId } from "../platforms/identity"
-import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
+import { priorityLevelSchema } from "../schemas/integration-request"
+import { IntegrationRequestsTable } from "../tables/integration-requests-table"
 import type { Origin } from "../types"
 
 export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
@@ -19,8 +20,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
       .min(10, "Description must be at least 10 characters")
       .max(2000)
       .describe("Detailed description of what the integration should do"),
-    priority: z
-      .enum(["low", "medium", "high", "critical"])
+    priority: priorityLevelSchema
       .describe("Priority level: low (nice-to-have), medium (useful), high (important), critical (urgent)"),
     requestedByName: z
       .string()
@@ -30,7 +30,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
       .string()
       .email()
       .optional()
-      .describe("Email of the requester - use getSlackUserContact to fetch this from their Slack ID"),
+      .describe("Email of the requester - use slackGetUserContact to fetch this from their Slack ID"),
     endUser: z
       .string()
       .min(1, "End user is required")
@@ -48,7 +48,7 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
     contactPersonEmail: z
       .string()
       .email()
-      .describe("Email of the contact person (REQUIRED - use getSlackUserContact if you have their Slack ID, otherwise ask the user)"),
+      .describe("Email of the contact person (REQUIRED - use slackGetUserContact if you have their Slack ID, otherwise ask the user)"),
     ccList: z
       .array(z.string().email())
       .optional()
@@ -80,8 +80,8 @@ export const saveIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
   }) => {
     const requestedByPlatformId = getUserId(origin as Origin, user) ?? "unknown"
 
-    // NOTE: resolveSlackContactPerson handles both Slack mentions and plain names
-    const contactPerson = await actions.resolveSlackContactPerson({
+    // NOTE: slackResolveContactPerson handles both Slack mentions and plain names
+    const contactPerson = await actions.slackResolveContactPerson({
       contactInput: contactPersonInput,
       emailIfProvided: contactPersonEmail,
     })

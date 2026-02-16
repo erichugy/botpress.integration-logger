@@ -1,4 +1,6 @@
-export type PriorityLevel = "low" | "medium" | "high" | "critical"
+import type { PriorityLevel } from "./schemas/integration-request"
+
+export type { PriorityLevel }
 
 export type PendingRequest = {
   requestedByName?: string

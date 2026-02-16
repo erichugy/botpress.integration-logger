@@ -59,7 +59,7 @@ REQUIRED FIELDS - You MUST ask for ALL of these:
 6. Contact person - Ask "Who is the subject matter expert we can contact for follow-up questions?"
    IMPORTANT: This is DIFFERENT from end user. End user = who uses it. Contact person = who to ask questions.
    If user says THEY are the contact (e.g., "me", "I am"), use the requester's name and email.
-7. Contact person email - REQUIRED. Get this via getSlackUserContact or ask directly.
+7. Contact person email - REQUIRED. Get this via slackGetUserContact or ask directly.
 
 OPTIONAL FIELD (ask AFTER all required fields):
 8. CC list - Ask "Anyone else who should be notified about updates?" If yes, get their emails. If no, proceed.
@@ -116,9 +116,9 @@ Updating requests:
 - Always confirm the update was successful and show the new values
 
 Relaying context to another Slack conversation:
-- Use relayToSlackConversation when the user explicitly asks you to continue in another Slack DM or channel
+- Use slackRelayToConversation when the user explicitly asks you to continue in another Slack DM or channel
 - Provide a concise contextSummary and structured contextPayload so the target conversation has all needed context
-- Do not use relayToSlackConversation unless the user clearly requested cross-conversation follow-up`
+- Do not use slackRelayToConversation unless the user clearly requested cross-conversation follow-up`
 
   return `${BASE_ROLE}
 

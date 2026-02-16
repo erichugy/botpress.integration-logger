@@ -1,4 +1,5 @@
 import { Table, z } from "@botpress/runtime"
+import { integrationRequestStatusSchema, priorityLevelSchema } from "../schemas/integration-request"
 
 export const IntegrationRequestsTable = new Table({
   name: "IntegrationRequestsTable",
@@ -13,13 +14,8 @@ export const IntegrationRequestsTable = new Table({
       schema: z.string().describe("Detailed description of the integration request"),
       searchable: true,
     },
-    priority: z
-      .enum(["low", "medium", "high", "critical"])
-      .describe("Priority level of the request"),
-    status: z
-      .enum(["new", "on_hold", "in_progress", "completed", "rejected"])
-      .default("new")
-      .describe("Current status of the request"),
+    priority: priorityLevelSchema.describe("Priority level of the request"),
+    status: integrationRequestStatusSchema.default("new").describe("Current status of the request"),
     origin: z
       .string()
       .default("slack")

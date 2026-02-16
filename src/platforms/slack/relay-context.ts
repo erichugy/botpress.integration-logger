@@ -1,4 +1,4 @@
-import { ConversationRelayContextTable } from "../../tables/ConversationRelayContextTable"
+import { ConversationRelayContextTable } from "../../tables/conversation-relay-context-table"
 import type { ChannelOrigin } from "../../types"
 
 type ConversationTags = Record<string, string | undefined>

@@ -1,7 +1,7 @@
 import { actions } from "@botpress/runtime"
-import { saveIntegrationRequest } from "../../tools/saveIntegrationRequest"
-import { searchIntegrationRequests } from "../../tools/searchIntegrationRequests"
-import { updateIntegrationRequest } from "../../tools/updateIntegrationRequest"
+import { saveIntegrationRequest } from "../../tools/save-integration-request"
+import { searchIntegrationRequests } from "../../tools/search-integration-requests"
+import { updateIntegrationRequest } from "../../tools/update-integration-request"
 import type { PlatformConfig } from "../types"
 
 export const slackConfig: PlatformConfig = {
@@ -12,9 +12,9 @@ export const slackConfig: PlatformConfig = {
     searchIntegrationRequests,
     updateIntegrationRequest,
     actions.parseRelativeDate.asTool(),
-    actions.getSlackUserContact.asTool(),
-    actions.findSlackUserByName.asTool(),
-    actions.relayToSlackConversation.asTool(),
+    actions.slackGetUserContact.asTool(),
+    actions.slackFindUserByName.asTool(),
+    actions.slackRelayToConversation.asTool(),
   ],
   mentionFormat: (userId: string) => `{"<@${userId}>"}`,
   mentionInstructions: `CRITICAL - Slack mentions:
@@ -29,11 +29,11 @@ WRONG:     <@anything>           (breaks JSX)
 RULE: If you don't have a valid Slack user ID (starting with U), just write the person's name as plain text.
 Example: "Contact person: John Smith" NOT "Contact person: {"<@john smith>"}"`,
   userLookupInstructions: `Getting emails (CRITICAL - use Slack tools):
-- For the REQUESTER: Use getSlackUserContact with the current user's Slack ID to get their email. Pass this as requestedByEmail.
+- For the REQUESTER: Use slackGetUserContact with the current user's Slack ID to get their email. Pass this as requestedByEmail.
 - For the CONTACT PERSON:
-  - If given a Slack mention (user ID like U0A6E7PA7FH), use getSlackUserContact with that ID to get their email
-  - If given just a name (like "Ermek" or "John Smith"), use findSlackUserByName to find their Slack ID, then use getSlackUserContact to get their email
-  - If findSlackUserByName doesn't find them OR getSlackUserContact returns no email, you MUST explicitly ask the user for the contact person's email
+  - If given a Slack mention (user ID like U0A6E7PA7FH), use slackGetUserContact with that ID to get their email
+  - If given just a name (like "Ermek" or "John Smith"), use slackFindUserByName to find their Slack ID, then use slackGetUserContact to get their email
+  - If slackFindUserByName doesn't find them OR slackGetUserContact returns no email, you MUST explicitly ask the user for the contact person's email
   - contactPersonEmail is MANDATORY - you cannot submit without it
-- For CC LIST: If user gives Slack mentions instead of emails, use getSlackUserContact to get their emails. If user gives names, use findSlackUserByName then getSlackUserContact.`,
+- For CC LIST: If user gives Slack mentions instead of emails, use slackGetUserContact to get their emails. If user gives names, use slackFindUserByName then slackGetUserContact.`,
 }

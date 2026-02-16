@@ -1,7 +1,7 @@
 import { Conversation, actions, user } from "@botpress/runtime"
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms"
 import { parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "../platforms/slack"
-import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relayContext"
+import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relay-context"
 import { buildInstructions } from "../utils/instructions"
 import type { Origin } from "../types"
 
@@ -29,12 +29,12 @@ export const SlackDM = new Conversation({
     const platform = getPlatformConfig(ORIGIN)
     const channelOrigin = getSlackChannelOrigin(slackMessage)
 
-    const { slackUserId, displayName } = await actions.getSlackUserInfo({
+    const { slackUserId, displayName } = await actions.slackGetUserInfo({
       messageUserId: getMessageUserId(ORIGIN, slackMessage),
       userTagId: getUserId(ORIGIN, user),
     })
 
-    const requesterContact = await actions.getSlackUserContact({
+    const requesterContact = await actions.slackGetUserContact({
       slackUserId,
     })
 

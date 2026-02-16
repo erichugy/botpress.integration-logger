@@ -1,8 +1,8 @@
 import { Action, actions, context, z } from "@botpress/runtime"
-import { ConversationRelayContextTable } from "../tables/ConversationRelayContextTable"
+import { ConversationRelayContextTable } from "../tables/conversation-relay-context-table"
 
-const relayToSlackConversation = new Action({
-  name: "relayToSlackConversation",
+const slackRelayToConversation = new Action({
+  name: "slackRelayToConversation",
   description:
     "Create or find a target Slack conversation, attach supplementary relay context to it, and mark that context as pending for the next turn.",
 
@@ -91,7 +91,7 @@ const relayToSlackConversation = new Action({
       },
     })
 
-    logger.debug("relayToSlackConversation: attached relay context", {
+    logger.debug("slackRelayToConversation: attached relay context", {
       relayId,
       targetConversationId,
       sourceConversationId,
@@ -109,4 +109,4 @@ const relayToSlackConversation = new Action({
   },
 })
 
-export default relayToSlackConversation
+export default slackRelayToConversation

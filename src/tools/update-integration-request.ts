@@ -1,10 +1,8 @@
 import { Autonomous, z } from "@botpress/runtime"
-import { IntegrationRequestsTable } from "../tables/IntegrationRequestsTable"
+import { integrationRequestStatusSchema, priorityLevelSchema } from "../schemas/integration-request"
+import { IntegrationRequestsTable } from "../tables/integration-requests-table"
 
-const statusEnum = z.enum(["new", "on_hold", "in_progress", "completed", "rejected"])
-const priorityEnum = z.enum(["low", "medium", "high", "critical"])
-
-export const updateIntegrationRequest = new Autonomous.Tool({
+export const updateIntegrationRequest: Autonomous.Tool = new Autonomous.Tool({
   name: "updateIntegrationRequest",
   description:
     "Update an existing integration request by ID. Can update status, priority, due date, contact person, or CC list. Cannot update core identity fields (title, description, requestedBy, origin, endUser).",
@@ -13,10 +11,10 @@ export const updateIntegrationRequest = new Autonomous.Tool({
     requestId: z
       .number()
       .describe("The ID of the integration request to update"),
-    status: statusEnum
+    status: integrationRequestStatusSchema
       .optional()
       .describe("New status for the request"),
-    priority: priorityEnum
+    priority: priorityLevelSchema
       .optional()
       .describe("New priority level"),
     dueDate: z
@@ -46,8 +44,8 @@ export const updateIntegrationRequest = new Autonomous.Tool({
       .object({
         id: z.number(),
         title: z.string(),
-        status: statusEnum,
-        priority: priorityEnum,
+        status: integrationRequestStatusSchema,
+        priority: priorityLevelSchema,
         requestedByName: z.string(),
         dueDate: z.string().optional(),
       })

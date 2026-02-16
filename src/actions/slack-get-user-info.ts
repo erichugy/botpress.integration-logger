@@ -7,8 +7,8 @@ const SlackProfileResponseSchema = z.object({
   email: z.string().optional(),
 })
 
-const getSlackUserInfo = new Action({
-  name: "getSlackUserInfo",
+const slackGetUserInfo = new Action({
+  name: "slackGetUserInfo",
   description: "Extract Slack user ID and fetch display name from Slack API",
   input: z.object({
     messageUserId: z.string().describe("Slack user ID from message tags"),
@@ -42,4 +42,4 @@ const getSlackUserInfo = new Action({
   },
 })
 
-export default getSlackUserInfo
+export default slackGetUserInfo

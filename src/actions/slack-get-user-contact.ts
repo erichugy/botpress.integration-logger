@@ -13,8 +13,8 @@ type Output = {
   slackId: string
 }
 
-const getSlackUserContact = new Action({
-  name: "getSlackUserContact",
+const slackGetUserContact = new Action({
+  name: "slackGetUserContact",
   description:
     "Get a Slack user's contact information (name, email) from their Slack user ID. Use this when you have a Slack user ID like U0A6E7PA7FH and need their contact details.",
 
@@ -52,10 +52,10 @@ const getSlackUserContact = new Action({
       logger.debug("Fetched Slack profile", { slackId: cleanId, name, email: profile.email })
       return { name, email: profile.email, slackId: cleanId }
     } catch (error) {
-      logger.error("getSlackUserContact failed", { error: error instanceof Error ? error.message : String(error) })
+      logger.error("slackGetUserContact failed", { error: error instanceof Error ? error.message : String(error) })
       return { name: cleanId, email: undefined, slackId: cleanId }
     }
   },
 })
 
-export default getSlackUserContact
+export default slackGetUserContact

@@ -19,8 +19,8 @@ const outputSchema = z.object({
   slackId: z.string().optional(),
 })
 
-const resolveSlackContactPerson = new Action({
-  name: "resolveSlackContactPerson",
+const slackResolveContactPerson = new Action({
+  name: "slackResolveContactPerson",
   description: "Resolve contact person info from Slack mention or name/email",
   input: z.object({
     contactInput: z.string().describe("Slack mention (e.g., <@U123ABC>) or name"),
@@ -97,4 +97,4 @@ const resolveSlackContactPerson = new Action({
   },
 })
 
-export default resolveSlackContactPerson
+export default slackResolveContactPerson

@@ -1,4 +1,4 @@
-import { z } from "@botpress/runtime";
+import { z } from "@botpress/runtime"
 
 // NOTE: Zod schemas kept private to avoid non-portable type inference errors
 // when exporting. Types are inferred from schemas per convention.
@@ -9,7 +9,7 @@ const SlackMessageTagsSchema = z.object({
   "slack:channelId": z.string(),
   "slack:channelOrigin": z.enum(["channel", "dm", "thread"]).optional(),
   "slack:forkedToThread": z.string().optional(),
-});
+})
 
 // NOTE: Slack mentions can be strings (user IDs) or objects depending on message source
 const SlackMentionSchema = z.object({
@@ -20,7 +20,7 @@ const SlackMentionSchema = z.object({
       name: z.string(),
     })
     .passthrough(),
-});
+})
 
 const SlackMessageSchema = z.object({
   id: z.string(),
@@ -35,40 +35,17 @@ const SlackMessageSchema = z.object({
     mentions: z.array(SlackMentionSchema),
   }),
   tags: SlackMessageTagsSchema,
-});
+})
 
-export type SlackMention = z.infer<typeof SlackMentionSchema>;
-export type SlackMessage = z.infer<typeof SlackMessageSchema>;
+export type SlackMention = z.infer<typeof SlackMentionSchema>
+export type SlackMessage = z.infer<typeof SlackMessageSchema>
 export type SlackChannelOrigin = NonNullable<SlackMessage["tags"]["slack:channelOrigin"]>
 
 export function parseSlackMessage(message: unknown): SlackMessage | null {
-  const result = SlackMessageSchema.safeParse(message);
-  return result.success ? result.data : null;
+  const result = SlackMessageSchema.safeParse(message)
+  return result.success ? result.data : null
 }
 
 export function getSlackChannelOrigin(message: SlackMessage): SlackChannelOrigin | undefined {
   return message.tags["slack:channelOrigin"]
 }
-
-/**
- * Schema for a pending integration request being collected in conversation.
- * Shared across all Slack conversation handlers (channel, thread, dm).
- */
-const pendingRequestSchema = z.object({
-  requestedByName: z.string().optional(),
-  requestedByEmail: z.string().optional(),
-  title: z.string().optional(),
-  description: z.string().optional(),
-  priority: z.enum(["low", "medium", "high", "critical"]).optional(),
-  endUser: z.string().optional(),
-  dueDate: z.string().optional(),
-  contactPersonInput: z.string().optional(),
-  contactPersonEmail: z.string().optional(),
-})
-
-/**
- * Conversation state schema shared by all Slack handlers.
- */
-export const conversationStateSchema = z.object({
-  pendingRequest: pendingRequestSchema.optional(),
-})

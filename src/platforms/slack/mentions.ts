@@ -1,4 +1,4 @@
-import type { SlackMention } from "./schemas";
+import type { SlackMention } from "./message";
 import { context } from "@botpress/runtime";
 import { RuntimeError } from "@botpress/sdk";
 
