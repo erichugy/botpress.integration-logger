@@ -27,6 +27,22 @@ export default defineConfig({
         title: "Bot Mentioned",
         description: "Whether the bot has been mentioned in this conversation",
       },
+      relayContextId: {
+        title: "Relay Context ID",
+        description: "Pointer to supplementary context stored for this conversation",
+      },
+      relayContextPending: {
+        title: "Relay Context Pending",
+        description: "Whether this conversation has pending supplementary relay context",
+      },
+      relaySourceConversationId: {
+        title: "Relay Source Conversation ID",
+        description: "Source conversation that initiated relay context for this conversation",
+      },
+      relayCreatedAt: {
+        title: "Relay Created At",
+        description: "ISO timestamp when relay context was attached to this conversation",
+      },
     },
   },
 
@@ -51,7 +67,7 @@ export default defineConfig({
   dependencies: {
     integrations: {
       slack: {
-        version: "slack@4.0.0",
+        version: "erichuang/slack@4.1.0",
         enabled: true,
         configurationType: "refreshToken",
         config: {

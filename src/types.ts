@@ -14,6 +14,16 @@ export type PendingRequest = {
 
 export type Origin = "slack" // NOTE: Only Slack is supported for now
 
+export type ChannelOrigin = "channel" | "dm" | "thread"
+
+export type RelayContext = {
+  relayId: string
+  summary: string
+  payload: unknown
+  sourceConversationId: string
+  sourceChannelOrigin?: ChannelOrigin
+}
+
 export type InstructionContext = {
   userId: string
   userName?: string
@@ -21,4 +31,6 @@ export type InstructionContext = {
   pendingRequest?: PendingRequest
   isPublicChannel: boolean
   origin: Origin
+  channelOrigin?: ChannelOrigin
+  relayContext?: RelayContext
 }

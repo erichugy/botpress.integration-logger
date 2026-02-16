@@ -7,6 +7,7 @@ const SlackMessageTagsSchema = z.object({
   "slack:ts": z.string(),
   "slack:userId": z.string(),
   "slack:channelId": z.string(),
+  "slack:channelOrigin": z.enum(["channel", "dm", "thread"]).optional(),
   "slack:forkedToThread": z.string().optional(),
 });
 
@@ -38,10 +39,15 @@ const SlackMessageSchema = z.object({
 
 export type SlackMention = z.infer<typeof SlackMentionSchema>;
 export type SlackMessage = z.infer<typeof SlackMessageSchema>;
+export type SlackChannelOrigin = NonNullable<SlackMessage["tags"]["slack:channelOrigin"]>
 
 export function parseSlackMessage(message: unknown): SlackMessage | null {
   const result = SlackMessageSchema.safeParse(message);
   return result.success ? result.data : null;
+}
+
+export function getSlackChannelOrigin(message: SlackMessage): SlackChannelOrigin | undefined {
+  return message.tags["slack:channelOrigin"]
 }
 
 /**

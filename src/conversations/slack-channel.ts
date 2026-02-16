@@ -1,6 +1,7 @@
 import { Conversation, actions, user, context } from "@botpress/runtime"
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms"
-import { isBotMentionedInMessage, parseSlackMessage, conversationStateSchema } from "../platforms/slack"
+import { isBotMentionedInMessage, parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "../platforms/slack"
+import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relayContext"
 import { buildInstructions } from "../utils/instructions"
 import type { Origin } from "../types"
 
@@ -31,6 +32,7 @@ export const SlackChannel = new Conversation({
     }
 
     const platform = getPlatformConfig(ORIGIN)
+    const channelOrigin = getSlackChannelOrigin(slackMessage)
 
     // Check if bot is mentioned in the message
     const isBotMentioned = isBotMentionedInMessage(
@@ -56,11 +58,15 @@ export const SlackChannel = new Conversation({
       slackUserId,
     })
 
+    const relayContext = await loadPendingRelayContext(conversation.tags)
+
     logger.debug("SlackChannel handler - executing instructions", {
       userId: slackUserId,
       userName: displayName,
       userEmail: requesterContact.email,
       pendingRequest: state.pendingRequest,
+      channelOrigin,
+      relayContextId: relayContext?.relayId,
       isPublicChannel: true,
       origin: ORIGIN,
     });
@@ -71,11 +77,25 @@ export const SlackChannel = new Conversation({
         userName: displayName,
         userEmail: requesterContact.email,
         pendingRequest: state.pendingRequest,
+        channelOrigin,
+        relayContext: relayContext
+          ? {
+              relayId: relayContext.relayId,
+              summary: relayContext.summary,
+              payload: relayContext.payload,
+              sourceConversationId: relayContext.sourceConversationId,
+              sourceChannelOrigin: relayContext.sourceChannelOrigin,
+            }
+          : undefined,
         isPublicChannel: true,
         origin: ORIGIN,
       }),
       tools: platform.getTools(),
     })
+
+    if (relayContext) {
+      await markRelayContextConsumed(conversation, relayContext.rowId)
+    }
 
     logger.debug("SlackChannel handler - completed", {
       conversationId: conversation.id,

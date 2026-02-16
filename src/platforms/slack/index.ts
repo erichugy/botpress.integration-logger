@@ -1,5 +1,5 @@
 export { slackConfig } from "./config"
 export { isBotMentionedInMessage } from "./mentions"
-export { parseSlackMessage, conversationStateSchema } from "./schemas"
+export { parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "./schemas"
 export { SLACK_TAG_KEYS } from "./tags"
-export type { SlackMessage } from "./schemas"
+export type { SlackMessage, SlackChannelOrigin } from "./schemas"

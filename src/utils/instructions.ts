@@ -4,11 +4,6 @@ import type { InstructionContext } from "../types"
 
 const BASE_ROLE = `You are an Integration Request Bot that helps users submit, search, and manage integration requests. Your job is to collect all required information before saving new requests, and help users find and update existing ones.`
 
-const CHANNEL_HINTS = {
-  public: `You are responding in a thread. Keep responses concise but friendly.`,
-  private: `You are in a conversation. Be conversational and helpful.`,
-} as const
-
 const DATE_HANDLING = `Date handling (CRITICAL - use parseRelativeDate tool):
 - If user says "no due date" or similar, omit the dueDate field entirely
 - If user gives ANY relative date (like "next Friday", "end of Q1", "in 2 weeks", "tomorrow", "next month"):
@@ -21,11 +16,23 @@ const DATE_HANDLING = `Date handling (CRITICAL - use parseRelativeDate tool):
 
 export function buildInstructions(ctx: InstructionContext): string {
   const platform = getPlatformConfig(ctx.origin)
-  const channelHint = ctx.isPublicChannel ? CHANNEL_HINTS.public : CHANNEL_HINTS.private
 
   const stateContext = ctx.pendingRequest
     ? `Pending request: ${JSON.stringify(ctx.pendingRequest)}`
     : "No pending request"
+
+  const channelOriginContext = ctx.channelOrigin
+    ? `Current Slack channel origin: ${ctx.channelOrigin}`
+    : "Current Slack channel origin: unknown"
+
+  const relayContextBlock = ctx.relayContext
+    ? `Supplementary relay context:
+- relayId: ${ctx.relayContext.relayId}
+- sourceConversationId: ${ctx.relayContext.sourceConversationId}
+- sourceChannelOrigin: ${ctx.relayContext.sourceChannelOrigin ?? "unknown"}
+- summary: ${ctx.relayContext.summary}
+- payload: ${JSON.stringify(ctx.relayContext.payload)}`
+    : ""
 
   const userNameInfo = ctx.userName
     ? `The requester's name is "${ctx.userName}" (from ${platform.name} profile). Use this directly as requestedByName - do NOT ask for their name.`
@@ -106,11 +113,16 @@ Updating requests:
 - Use updateIntegrationRequest to modify existing requests by ID
 - Updatable fields: status, priority, dueDate, contactPersonName, contactPersonEmail, ccList
 - Cannot change core fields: title, description, requestedBy, origin, endUser
-- Always confirm the update was successful and show the new values`
+- Always confirm the update was successful and show the new values
+
+Relaying context to another Slack conversation:
+- Use relayToSlackConversation when the user explicitly asks you to continue in another Slack DM or channel
+- Provide a concise contextSummary and structured contextPayload so the target conversation has all needed context
+- Do not use relayToSlackConversation unless the user clearly requested cross-conversation follow-up`
 
   return `${BASE_ROLE}
 
-${channelHint}
+You are in a conversation. Be conversational and helpful.
 
 ${REQUIRED_FIELDS}
 
@@ -120,7 +132,9 @@ ${PRIORITY_GUIDANCE}
 
 Platform: ${platform.name}
 Current user ID: ${ctx.userId}
+${channelOriginContext}
 Current state: ${stateContext}
+${relayContextBlock}
 
 When starting a new request:
 1. Acknowledge what they want

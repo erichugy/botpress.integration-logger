@@ -1,6 +1,7 @@
-import { Conversation, actions, user, context } from "@botpress/runtime"
+import { Conversation, actions, user } from "@botpress/runtime"
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms"
-import { parseSlackMessage, conversationStateSchema } from "../platforms/slack"
+import { parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "../platforms/slack"
+import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relayContext"
 import { buildInstructions } from "../utils/instructions"
 import type { Origin } from "../types"
 
@@ -15,7 +16,7 @@ export const SlackDM = new Conversation({
 
   state: conversationStateSchema,
 
-  async handler({ message, state, execute }) {
+  async handler({ message, conversation, state, execute }) {
     if (message?.type !== "text") {
       return
     }
@@ -26,6 +27,7 @@ export const SlackDM = new Conversation({
     }
 
     const platform = getPlatformConfig(ORIGIN)
+    const channelOrigin = getSlackChannelOrigin(slackMessage)
 
     const { slackUserId, displayName } = await actions.getSlackUserInfo({
       messageUserId: getMessageUserId(ORIGIN, slackMessage),
@@ -36,16 +38,32 @@ export const SlackDM = new Conversation({
       slackUserId,
     })
 
+    const relayContext = await loadPendingRelayContext(conversation.tags)
+
     await execute({
       instructions: buildInstructions({
         userId: slackUserId,
         userName: displayName,
         userEmail: requesterContact.email,
         pendingRequest: state.pendingRequest,
+        channelOrigin,
+        relayContext: relayContext
+          ? {
+              relayId: relayContext.relayId,
+              summary: relayContext.summary,
+              payload: relayContext.payload,
+              sourceConversationId: relayContext.sourceConversationId,
+              sourceChannelOrigin: relayContext.sourceChannelOrigin,
+            }
+          : undefined,
         isPublicChannel: false,
         origin: ORIGIN,
       }),
       tools: platform.getTools(),
     })
+
+    if (relayContext) {
+      await markRelayContextConsumed(conversation, relayContext.rowId)
+    }
   },
 })
