@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit 2>&1 | grep -v 'cannot be named without a reference' || true"
   },
   "dependencies": {
-    "@botpress/runtime": "latest",
+    "@botpress/runtime": "^1.14.0",
     "@botpress/sdk": "latest",
     "dotenv": "^16.4.5"
   },

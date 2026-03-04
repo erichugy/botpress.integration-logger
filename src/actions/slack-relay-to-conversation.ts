@@ -1,5 +1,24 @@
 import { Action, actions, context, z } from "@botpress/runtime"
+import { RuntimeError } from "@botpress/sdk"
 import { ConversationRelayContextTable } from "../tables/conversation-relay-context-table"
+
+const SLACK_USER_ID_REGEX = /^U[A-Z0-9]+$/
+const SLACK_MENTION_REGEX = /^<@([A-Z0-9]+)>$/
+
+function normalizeSlackUserId(value: string): string {
+  const mentionMatch = SLACK_MENTION_REGEX.exec(value.trim())
+  return mentionMatch ? mentionMatch[1] : value.trim()
+}
+
+function assertValidSlackUserId(value: string, fieldName: string): string {
+  const normalized = normalizeSlackUserId(value)
+  if (!SLACK_USER_ID_REGEX.test(normalized)) {
+    throw new RuntimeError(
+      `${fieldName} must be a Slack user ID in the format Uxxxxxxxxxx (or <@Uxxxxxxxxxx>). Received "${value}". Botpress user IDs like "user_..." are not allowed.`
+    )
+  }
+  return normalized
+}
 
 const slackRelayToConversation = new Action({
   name: "slackRelayToConversation",
@@ -8,7 +27,12 @@ const slackRelayToConversation = new Action({
 
   input: z.object({
     targetType: z.enum(["dm", "channel"]).describe("Target conversation type"),
-    targetSlackUserId: z.string().optional().describe("Required when targetType is 'dm'"),
+    targetSlackUserId: z
+      .string()
+      .optional()
+      .describe(
+        "Required when targetType is 'dm'. Must be a Slack user ID starting with U (e.g., U0A6E7PA7FH), not a Botpress user ID."
+      ),
     targetChannelName: z.string().optional().describe("Required when targetType is 'channel'"),
     contextSummary: z.string().min(1).describe("Short summary of what context is being relayed"),
     contextPayload: z.unknown().optional().describe("Structured supplementary context payload"),
@@ -17,7 +41,10 @@ const slackRelayToConversation = new Action({
       .enum(["channel", "dm", "thread"])
       .optional()
       .describe("Source channel origin for traceability"),
-    createdBySlackUserId: z.string().optional().describe("Slack user id who initiated the relay"),
+    createdBySlackUserId: z
+      .string()
+      .optional()
+      .describe("Slack user ID who initiated the relay (must start with U)"),
     expiresAt: z.string().optional().describe("Optional ISO timestamp after which relay context should be ignored"),
   }),
 
@@ -35,14 +62,18 @@ const slackRelayToConversation = new Action({
     const currentConversation = context.get("conversation")
 
     let targetConversationId = ""
+    const createdBySlackUserId = input.createdBySlackUserId
+      ? assertValidSlackUserId(input.createdBySlackUserId, "createdBySlackUserId")
+      : undefined
 
     if (input.targetType === "dm") {
       if (!input.targetSlackUserId) {
         throw new Error("targetSlackUserId is required when targetType is 'dm'")
       }
+      const targetSlackUserId = assertValidSlackUserId(input.targetSlackUserId, "targetSlackUserId")
 
       const result = await actions.slack.startDmConversation({
-        slackUserId: input.targetSlackUserId,
+        slackUserId: targetSlackUserId,
       })
       targetConversationId = result.conversationId
     }
@@ -68,7 +99,7 @@ const slackRelayToConversation = new Action({
           targetConversationId,
           sourceConversationId,
           sourceChannelOrigin: input.sourceChannelOrigin,
-          createdBySlackUserId: input.createdBySlackUserId ?? "unknown",
+          createdBySlackUserId: createdBySlackUserId ?? "unknown",
           contextSummary: input.contextSummary,
           contextPayload: JSON.stringify(input.contextPayload ?? {}),
           consumed: false,

@@ -117,6 +117,8 @@ Updating requests:
 
 Relaying context to another Slack conversation:
 - Use slackRelayToConversation when the user explicitly asks you to continue in another Slack DM or channel
+- If you receive a Botpress user ID (user_...), call slackResolveUserId first and only pass the resolved Slack U... ID to slackRelayToConversation
+- targetSlackUserId must be a real Slack user ID (starts with "U", e.g., U0A6E7PA7FH), not a Botpress user ID (user_...)
 - Provide a concise contextSummary and structured contextPayload so the target conversation has all needed context
 - Do not use slackRelayToConversation unless the user clearly requested cross-conversation follow-up`
 

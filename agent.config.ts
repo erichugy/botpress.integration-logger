@@ -59,9 +59,7 @@ export default defineConfig({
   },
 
   configuration: {
-    schema: z.object({
-      SLACK_BOT_USERNAME: z.string(),
-    }),
+    schema: z.object({}),
   },
 
   dependencies: {
@@ -77,7 +75,7 @@ export default defineConfig({
           clientSecret: process.env.SLACK_CLIENT_SECRET,
           typingIndicatorEmoji: true,
           replyBehaviour: {
-            location: "channel",
+            location: "thread",
             onlyOnBotMention: false,
           },
         },
