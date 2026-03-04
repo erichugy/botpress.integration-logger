@@ -35,7 +35,7 @@ const slackRelayToConversation = new Action({
     sourceChannelOrigin: z.enum(["channel", "dm", "thread"]).optional().describe("Source channel origin for traceability"),
     createdBySlackUserId: z.string().optional().describe("Slack user ID who initiated the relay (must start with U)"),
     expiresAt: z.string().optional().describe("Optional ISO timestamp after which relay context should be ignored"),
-    question: z.string().optional().describe("The specific question to ask the target user"),
+    question: z.string().trim().max(1000).optional().describe("The specific question to ask the target user"),
   }),
 
   output: z.object({
@@ -89,7 +89,7 @@ const slackRelayToConversation = new Action({
         consumedAt: undefined,
         expiresAt: input.expiresAt,
         status: "awaiting_response",
-        question: input.question,
+        question: input.question || undefined,
       }],
     })
 

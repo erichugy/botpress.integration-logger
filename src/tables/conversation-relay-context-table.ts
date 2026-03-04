@@ -19,8 +19,8 @@ export const ConversationRelayContextTable = new Table({
       .default("pending")
       .describe("Current status of the relay context lifecycle"),
     question: { schema: z.string().optional().describe("The specific question being asked of the target user"), searchable: true },
-    responsePayload: z.string().optional().describe("JSON payload containing the target user's response"),
+    responsePayload: z.string().max(10000).optional().describe("JSON payload containing the target user's response"),
     respondedAt: z.string().optional().describe("ISO timestamp when target user responded"),
-    respondedBySlackUserId: z.string().optional().describe("Slack user ID of the person who responded"),
+    respondedBySlackUserId: z.string().max(50).optional().describe("Slack user ID of the person who responded"),
   },
 })
