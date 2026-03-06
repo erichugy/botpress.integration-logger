@@ -27,25 +27,15 @@ const slackRelayToConversation = new Action({
 
   input: z.object({
     targetType: z.enum(["dm", "channel"]).describe("Target conversation type"),
-    targetSlackUserId: z
-      .string()
-      .optional()
-      .describe(
-        "Required when targetType is 'dm'. Must be a Slack user ID starting with U (e.g., U0A6E7PA7FH), not a Botpress user ID."
-      ),
+    targetSlackUserId: z.string().optional().describe("Required when targetType is 'dm'. Must be a Slack user ID starting with U (e.g., U0A6E7PA7FH), not a Botpress user ID."),
     targetChannelName: z.string().optional().describe("Required when targetType is 'channel'"),
     contextSummary: z.string().min(1).describe("Short summary of what context is being relayed"),
     contextPayload: z.unknown().optional().describe("Structured supplementary context payload"),
     sourceConversationId: z.string().optional().describe("Source conversation id (defaults to current conversation)"),
-    sourceChannelOrigin: z
-      .enum(["channel", "dm", "thread"])
-      .optional()
-      .describe("Source channel origin for traceability"),
-    createdBySlackUserId: z
-      .string()
-      .optional()
-      .describe("Slack user ID who initiated the relay (must start with U)"),
+    sourceChannelOrigin: z.enum(["channel", "dm", "thread"]).optional().describe("Source channel origin for traceability"),
+    createdBySlackUserId: z.string().optional().describe("Slack user ID who initiated the relay (must start with U)"),
     expiresAt: z.string().optional().describe("Optional ISO timestamp after which relay context should be ignored"),
+    question: z.string().trim().max(1000).optional().describe("The specific question to ask the target user"),
   }),
 
   output: z.object({
@@ -71,10 +61,7 @@ const slackRelayToConversation = new Action({
         throw new Error("targetSlackUserId is required when targetType is 'dm'")
       }
       const targetSlackUserId = assertValidSlackUserId(input.targetSlackUserId, "targetSlackUserId")
-
-      const result = await actions.slack.startDmConversation({
-        slackUserId: targetSlackUserId,
-      })
+      const result = await actions.slack.startDmConversation({ slackUserId: targetSlackUserId })
       targetConversationId = result.conversationId
     }
 
@@ -82,10 +69,7 @@ const slackRelayToConversation = new Action({
       if (!input.targetChannelName) {
         throw new Error("targetChannelName is required when targetType is 'channel'")
       }
-
-      const result = await actions.slack.startChannelConversation({
-        channelName: input.targetChannelName,
-      })
+      const result = await actions.slack.startChannelConversation({ channelName: input.targetChannelName })
       targetConversationId = result.conversationId
     }
 
@@ -93,24 +77,23 @@ const slackRelayToConversation = new Action({
     const sourceConversationId = input.sourceConversationId ?? currentConversation.id
 
     const rowResult = await ConversationRelayContextTable.createRows({
-      rows: [
-        {
-          relayId,
-          targetConversationId,
-          sourceConversationId,
-          sourceChannelOrigin: input.sourceChannelOrigin,
-          createdBySlackUserId: createdBySlackUserId ?? "unknown",
-          contextSummary: input.contextSummary,
-          contextPayload: JSON.stringify(input.contextPayload ?? {}),
-          consumed: false,
-          consumedAt: undefined,
-          expiresAt: input.expiresAt,
-        },
-      ],
+      rows: [{
+        relayId,
+        targetConversationId,
+        sourceConversationId,
+        sourceChannelOrigin: input.sourceChannelOrigin,
+        createdBySlackUserId: createdBySlackUserId ?? "unknown",
+        contextSummary: input.contextSummary,
+        contextPayload: JSON.stringify(input.contextPayload ?? {}),
+        consumed: false,
+        consumedAt: undefined,
+        expiresAt: input.expiresAt,
+        status: "awaiting_response",
+        question: input.question || undefined,
+      }],
     })
 
     const targetConversation = await client.getConversation({ id: targetConversationId })
-
     await client.updateConversation({
       id: targetConversationId,
       tags: {
@@ -123,11 +106,8 @@ const slackRelayToConversation = new Action({
     })
 
     logger.debug("slackRelayToConversation: attached relay context", {
-      relayId,
-      targetConversationId,
-      sourceConversationId,
-      targetType: input.targetType,
-      createdRowId: rowResult.rows[0]?.id,
+      relayId, targetConversationId, sourceConversationId,
+      targetType: input.targetType, createdRowId: rowResult.rows[0]?.id,
     })
 
     return {
