@@ -14,6 +14,16 @@ type PendingRelayContext = {
   payload: unknown
   sourceConversationId: string
   sourceChannelOrigin: ChannelOrigin | undefined
+  question?: string
+}
+
+type RelayResponseResult = {
+  relayId: string
+  question?: string
+  contextSummary: string
+  responseText: string
+  respondedBySlackUserId?: string
+  respondedAt?: string
 }
 
 export async function loadPendingRelayContext(tags: ConversationTags): Promise<PendingRelayContext | undefined> {
@@ -51,6 +61,7 @@ export async function loadPendingRelayContext(tags: ConversationTags): Promise<P
     payload: parsedPayload,
     sourceConversationId: row.sourceConversationId,
     sourceChannelOrigin: row.sourceChannelOrigin,
+    question: row.question ?? undefined,
   }
 }
 
@@ -66,4 +77,35 @@ export async function markRelayContextConsumed(conversation: ConversationLike, r
   })
 
   conversation.tags.relayContextPending = "false"
+}
+
+export async function loadPendingRelayResponses(conversationId: string): Promise<RelayResponseResult[]> {
+  const result = await ConversationRelayContextTable.findRows({
+    filter: {
+      sourceConversationId: conversationId,
+      status: "responded",
+    },
+    limit: 50,
+  })
+
+  return result.rows.map((row) => {
+    let responseText = ""
+    if (row.responsePayload) {
+      try {
+        const parsed = JSON.parse(row.responsePayload)
+        responseText = typeof parsed === "string" ? parsed : (parsed.text ?? JSON.stringify(parsed))
+      } catch {
+        responseText = row.responsePayload
+      }
+    }
+
+    return {
+      relayId: row.relayId,
+      question: row.question ?? undefined,
+      contextSummary: row.contextSummary,
+      responseText,
+      respondedBySlackUserId: row.respondedBySlackUserId ?? undefined,
+      respondedAt: row.respondedAt ?? undefined,
+    }
+  })
 }

@@ -25,6 +25,19 @@ export function buildInstructions(ctx: InstructionContext): string {
     ? `Current Slack channel origin: ${ctx.channelOrigin}`
     : "Current Slack channel origin: unknown"
 
+  const relayQuestionBlock = ctx.relayContext?.question
+    ? `RELAY QUESTION MODE:
+You are in a relay conversation. A user from another channel asked you to get information from the current user.
+The question to ask: "${ctx.relayContext.question}"
+Relay ID: ${ctx.relayContext.relayId}
+
+Your job:
+1. Ask the current user this question
+2. Once they provide an answer, call submitRelayResponse with their answer and this relay ID
+3. After submitting, confirm to the user that their response has been recorded
+Do NOT collect integration request fields in this mode - focus solely on getting the answer to the relay question.`
+    : ""
+
   const relayContextBlock = ctx.relayContext
     ? `Supplementary relay context:
 - relayId: ${ctx.relayContext.relayId}
@@ -32,6 +45,20 @@ export function buildInstructions(ctx: InstructionContext): string {
 - sourceChannelOrigin: ${ctx.relayContext.sourceChannelOrigin ?? "unknown"}
 - summary: ${ctx.relayContext.summary}
 - payload: ${JSON.stringify(ctx.relayContext.payload)}`
+    : ""
+
+  const relayResponsesBlock = ctx.relayResponses?.length
+    ? `RELAY RESPONSES RECEIVED:
+The following relay questions have been answered:
+${ctx.relayResponses
+  .map(
+    (r) =>
+      `- ${r.respondedBySlackUserId ?? "Someone"} answered: "${r.responseText}" (question was: "${r.question ?? "unknown"}", relay: ${r.relayId})`
+  )
+  .join("\n")}
+
+Use checkRelayResponses to mark these as consumed when you've incorporated them into your response.
+Inform the user about these responses naturally in your reply.`
     : ""
 
   const userNameInfo = ctx.userName
@@ -137,6 +164,8 @@ Current user ID: ${ctx.userId}
 ${channelOriginContext}
 Current state: ${stateContext}
 ${relayContextBlock}
+${relayQuestionBlock}
+${relayResponsesBlock}
 
 When starting a new request:
 1. Acknowledge what they want

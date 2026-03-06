@@ -16,6 +16,8 @@ export const slackConfig: PlatformConfig = {
     actions.slackGetUserContact.asTool(),
     actions.slackFindUserByName.asTool(),
     actions.slackRelayToConversation.asTool(),
+    actions.slackSubmitRelayResponse.asTool(),
+    actions.slackCheckRelayResponses.asTool(),
   ],
   mentionFormat: (userId: string) => `{"<@${userId}>"}`,
   mentionInstructions: `CRITICAL - Slack mentions:

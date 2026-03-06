@@ -1,7 +1,7 @@
 import { Conversation, actions, user } from "@botpress/runtime"
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms"
 import { parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "../platforms/slack"
-import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relay-context"
+import { loadPendingRelayContext, loadPendingRelayResponses, markRelayContextConsumed } from "../platforms/slack/relay-context"
 import { buildInstructions } from "../utils/instructions"
 import type { Origin } from "../types"
 
@@ -39,6 +39,7 @@ export const SlackDM = new Conversation({
     })
 
     const relayContext = await loadPendingRelayContext(conversation.tags)
+    const relayResponses = await loadPendingRelayResponses(conversation.id)
 
     await execute({
       instructions: buildInstructions({
@@ -54,8 +55,10 @@ export const SlackDM = new Conversation({
               payload: relayContext.payload,
               sourceConversationId: relayContext.sourceConversationId,
               sourceChannelOrigin: relayContext.sourceChannelOrigin,
+              question: relayContext.question,
             }
           : undefined,
+        relayResponses: relayResponses.length > 0 ? relayResponses : undefined,
         isPublicChannel: false,
         origin: ORIGIN,
       }),
