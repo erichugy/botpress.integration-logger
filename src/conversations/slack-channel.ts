@@ -1,7 +1,7 @@
 import { Conversation, actions, user, context } from "@botpress/runtime"
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms"
 import { isBotMentionedInMessage, parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "../platforms/slack"
-import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relay-context"
+import { loadPendingRelayContext, loadPendingRelayResponses, markRelayContextConsumed } from "../platforms/slack/relay-context"
 import { buildInstructions } from "../utils/instructions"
 import type { Origin } from "../types"
 
@@ -59,6 +59,7 @@ export const SlackChannel = new Conversation({
     })
 
     const relayContext = await loadPendingRelayContext(conversation.tags)
+    const relayResponses = await loadPendingRelayResponses(conversation.id)
 
     logger.debug("SlackChannel handler - executing instructions", {
       userId: slackUserId,
@@ -67,6 +68,7 @@ export const SlackChannel = new Conversation({
       pendingRequest: state.pendingRequest,
       channelOrigin,
       relayContextId: relayContext?.relayId,
+      relayResponseCount: relayResponses.length,
       isPublicChannel: true,
       origin: ORIGIN,
     });
@@ -85,8 +87,10 @@ export const SlackChannel = new Conversation({
               payload: relayContext.payload,
               sourceConversationId: relayContext.sourceConversationId,
               sourceChannelOrigin: relayContext.sourceChannelOrigin,
+              question: relayContext.question,
             }
           : undefined,
+        relayResponses: relayResponses.length > 0 ? relayResponses : undefined,
         isPublicChannel: true,
         origin: ORIGIN,
       }),

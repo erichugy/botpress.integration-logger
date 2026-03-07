@@ -24,6 +24,16 @@ export type RelayContext = {
   payload: unknown
   sourceConversationId: string
   sourceChannelOrigin?: ChannelOrigin
+  question?: string
+}
+
+export type RelayResponse = {
+  relayId: string
+  question?: string
+  contextSummary: string
+  responseText: string
+  respondedBySlackUserId?: string
+  respondedAt?: string
 }
 
 export type InstructionContext = {
@@ -35,4 +45,5 @@ export type InstructionContext = {
   origin: Origin
   channelOrigin?: ChannelOrigin
   relayContext?: RelayContext
+  relayResponses?: RelayResponse[]
 }

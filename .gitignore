@@ -25,3 +25,13 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+
+# AI/IDE tools
+.ignore.me/
+.ignore.me/**
+.cursor/
+.cursorignore/
+.claude/
+.opencode
+.codex

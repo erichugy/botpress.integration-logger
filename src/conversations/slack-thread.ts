@@ -1,7 +1,7 @@
 import { Conversation, actions, user, context } from "@botpress/runtime"
 import { getMessageUserId, getPlatformConfig, getUserId } from "../platforms"
 import { isBotMentionedInMessage, parseSlackMessage, getSlackChannelOrigin, conversationStateSchema } from "../platforms/slack"
-import { loadPendingRelayContext, markRelayContextConsumed } from "../platforms/slack/relay-context"
+import { loadPendingRelayContext, loadPendingRelayResponses, markRelayContextConsumed } from "../platforms/slack/relay-context"
 import { buildInstructions } from "../utils/instructions"
 import type { Origin } from "../types"
 
@@ -57,6 +57,7 @@ export const SlackThread = new Conversation({
     })
 
     const relayContext = await loadPendingRelayContext(conversation.tags)
+    const relayResponses = await loadPendingRelayResponses(conversation.id)
 
     await execute({
       instructions: buildInstructions({
@@ -72,8 +73,10 @@ export const SlackThread = new Conversation({
               payload: relayContext.payload,
               sourceConversationId: relayContext.sourceConversationId,
               sourceChannelOrigin: relayContext.sourceChannelOrigin,
+              question: relayContext.question,
             }
           : undefined,
+        relayResponses: relayResponses.length > 0 ? relayResponses : undefined,
         isPublicChannel: true,
         origin: ORIGIN,
       }),
